@@ -1,6 +1,12 @@
 package de.stuefe.repros.metaspace.internals;
 public class Utils {
 
+	static public void createRandomClass(String classname, int sizeFactor) {
+		String code = Utils.makeRandomSource(sizeFactor).replaceAll("CLASSNAME", classname);
+		boolean success = InMemoryJavaFileManager.theFileManager().compileSingleFile(classname, code);
+		assert(success);
+	}
+
 	static public String makeRandomSource(int size) {
 	
 		StringBuilder bld = new StringBuilder();

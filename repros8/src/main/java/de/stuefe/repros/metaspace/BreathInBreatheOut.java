@@ -16,13 +16,7 @@ import java.util.LinkedList;
  * @author Thomas Stuefe
  *
  */
-public class SmallThenLargeTest {
-
-	private static void createRandomClass(String classname, int sizeFactor) {
-		String code = Utils.makeRandomSource(sizeFactor).replaceAll("CLASSNAME", classname);
-		boolean success = InMemoryJavaFileManager.theFileManager().compileSingleFile(classname, code);
-		assert(success);
-	}
+public class BreathInBreatheOut {
 
 	private static String nameClass(int number, int sizeFactor) {
         return "myclass_size_" + sizeFactor + "_number_" + number;
@@ -31,13 +25,12 @@ public class SmallThenLargeTest {
 	private static void generateClasses(int numClasses, int sizeFactor) {
         for (int i = 0; i < numClasses; i++) {
             String className = nameClass(i, sizeFactor);
-            createRandomClass(className, sizeFactor);
+            Utils.createRandomClass(className, sizeFactor);
             if (i % 100 == 0) {
                 System.out.println(i + "...");
             }
         }
     }
-
 
 	public static void main(String args[]) throws Exception {
 
@@ -59,6 +52,7 @@ public class SmallThenLargeTest {
         generateClasses(numLargeClasses, sizeFactorLargeClasses);
         System.out.print("Done.");
 
+        System.gc();
         System.out.println("<press key>");
         System.in.read();
 
