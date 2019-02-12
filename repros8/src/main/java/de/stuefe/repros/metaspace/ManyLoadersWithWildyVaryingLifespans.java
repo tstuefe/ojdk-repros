@@ -1,5 +1,6 @@
 package de.stuefe.repros.metaspace;
 
+import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
 
@@ -78,8 +79,7 @@ public class ManyLoadersWithWildyVaryingLifespans {
 
         // Clean up class generation remnants.
         System.gc();
-//        System.out.println("<press key>");
-//        System.in.read();
+        MiscUtils.waitForKeyPress();
 
         int numLoadersAlive = numLoaders;
 
@@ -95,8 +95,7 @@ public class ManyLoadersWithWildyVaryingLifespans {
                 System.out.println("Alive: " + numLoadersAlive);
                 de.stuefe.repros.process.Utils.executeCommand("/bin/ps", "-o", "pid,rss", "" + de.stuefe.repros.process.Utils.getPid());
                 de.stuefe.repros.process.Utils.executeCommand("/shared/projects/openjdk/jdks/openjdk11/bin/jcmd", "" + de.stuefe.repros.process.Utils.getPid(), "VM.metaspace", "basic", "scale=k");
-//                System.out.println("<press key>");
-//                System.in.read();
+                MiscUtils.waitForKeyPress();
                 nextStopAt -= stopInterval;
             }
 
@@ -111,6 +110,9 @@ public class ManyLoadersWithWildyVaryingLifespans {
             numLoadersAlive -= numUnloaded;
 
         }
+
+        MiscUtils.waitForKeyPress();
+
         System.out.println("Done");
 
     }

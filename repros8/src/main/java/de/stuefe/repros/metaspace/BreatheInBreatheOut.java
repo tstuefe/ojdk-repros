@@ -1,5 +1,6 @@
 package de.stuefe.repros.metaspace;
 
+import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager;
 import de.stuefe.repros.metaspace.internals.Utils;
@@ -16,7 +17,7 @@ import java.util.LinkedList;
  * @author Thomas Stuefe
  *
  */
-public class BreathInBreatheOut {
+public class BreatheInBreatheOut {
 
 	private static String nameClass(int number, int sizeFactor) {
         return "myclass_size_" + sizeFactor + "_number_" + number;
@@ -50,11 +51,10 @@ public class BreathInBreatheOut {
         System.out.print("Done.");
         System.out.print("Large (" + numLargeClasses + ") ...");
         generateClasses(numLargeClasses, sizeFactorLargeClasses);
-        System.out.print("Done.");
+        System.out.println("Done.");
 
         System.gc();
-        System.out.println("<press key>");
-        System.in.read();
+        MiscUtils.waitForKeyPress();
 
         for (int run = 0; run < 1000; run ++) {
 
@@ -73,8 +73,7 @@ public class BreathInBreatheOut {
 			}
 			System.out.print("Done.");
 
-            System.out.println("<press key for GC>");
-            System.in.read();
+            MiscUtils.waitForKeyPress("before GC");
 
 			// clean all up
             System.out.print("GC...");
@@ -82,8 +81,7 @@ public class BreathInBreatheOut {
 			System.gc();
             System.out.println("Done.");
 
-            System.out.println("<press key>");
-            System.in.read();
+            MiscUtils.waitForKeyPress();
 
 
             ///////////////////
@@ -100,16 +98,14 @@ public class BreathInBreatheOut {
             }
             System.out.print("Done.");
 
-            System.out.println("<press key for GC>");
-            System.in.read();
+            MiscUtils.waitForKeyPress("before GC");
 
             System.out.print("GC...");
             largeLoader = null;
             System.gc();
             System.out.println("Done.");
 
-            System.out.println("<press key>");
-            System.in.read();
+            MiscUtils.waitForKeyPress();
 
 		}
 	}
