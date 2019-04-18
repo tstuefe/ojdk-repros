@@ -1,5 +1,7 @@
 package de.stuefe.repros.process;
 
+import de.stuefe.repros.MiscUtils;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,28 +26,30 @@ public class RuntimeExecWithManyFilesTest {
 
         System.out.println("Openeing " + nofiles_open + " files...");
 
-        // Open files and keep them open
-        List<FileReader> readers = new ArrayList<FileReader>();
-        for (int i = 0; i < nofiles_open; i ++) {
-            FileReader r = new FileReader("/proc/meminfo");
-            readers.add(r);
-        }
+        {
+            // Open files and keep them open
+            List<FileReader> readers = new ArrayList<FileReader>();
+            for (int i = 0; i < nofiles_open; i++) {
+                FileReader r = new FileReader("/proc/meminfo");
+                readers.add(r);
+            }
 
-        System.out.println("<press key>");
-        System.in.read();
+            MiscUtils.waitForKeyPress("Before forking");
 
-        System.out.println("Starting " + num_procs + "Processes...");
-        Process[] processes = new Process[num_procs];
-        for (int i = 0; i < num_procs; i ++) {
-            processes[i] = Runtime.getRuntime().exec(cmd);
+            System.out.println("Starting " + num_procs + "Processes...");
+            Process[] processes = new Process[num_procs];
+            for (int i = 0; i < num_procs; i++) {
+                processes[i] = Runtime.getRuntime().exec(cmd);
+            }
+            System.out.println("Waiting on " + num_procs + "Processes...");
+            for (int i = 0; i < num_procs; i++) {
+                processes[i].waitFor();
+            }
         }
-        System.out.println("Waiting on " + num_procs + "Processes...");
-        for (int i = 0; i < num_procs; i ++) {
-            processes[i].waitFor();
-        }
-
-        System.out.println("<press key>");
-        System.in.read();
+        MiscUtils.waitForKeyPress("Child processes finished, before gc");
+        System.gc();
+        System.gc();
+        MiscUtils.waitForKeyPress("after gc");
 
     }
 

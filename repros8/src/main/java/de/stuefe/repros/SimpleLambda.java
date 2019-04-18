@@ -80,9 +80,7 @@ public class SimpleLambda {
 		printEmperorsWithPredicate(list, (Emperor e) -> e.years() <= 2);
 		System.out.println("");
 		
-		System.out.println("<press key>");
-		System.in.read();
-		
+		MiscUtils.waitForKeyPress();
 	}
 	
 	
