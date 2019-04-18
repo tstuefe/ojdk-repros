@@ -13,6 +13,8 @@
     </modules>
     <packaging>pom</packaging>
 
+    <!-- pack all deps into my jar -->
+
     <build>
         <pluginManagement>
             <plugins>

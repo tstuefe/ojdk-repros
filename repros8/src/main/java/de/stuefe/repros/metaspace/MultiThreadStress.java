@@ -1,7 +1,10 @@
 package de.stuefe.repros.metaspace;
 
+import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
+import de.stuefe.repros.util.CommandLineHelpers;
+import org.apache.commons.cli.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -255,20 +258,47 @@ public class MultiThreadStress {
             this.sizeSpec = sizeSpec;
         }
 
+        static String validKeys() {
+            String s = "";
+            for (TestProfile p : TestProfile.values()) {
+                s += p.toString(); s += " ";
+            }
+            return s;
+        }
 
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
-        String usage = "Usage: " + MultiThreadStress.class.getName() + " [<profile>] ";
+        Options options = CommandLineHelpers.prepareOptions();
+        options.addOption("p", "profile", true, "test profile (one of " + TestProfile.validKeys() + ").");
+        options.addOption(
+                Option.builder()
+                        .longOpt("time")
+                        .hasArg()
+                        .desc("time this test should take, in seconds.")
+                        .build());
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmdline = parser.parse(options, args);
+
+        CommandLineHelpers.handleHelpForClass(cmdline, MultiThreadStress.class, options);
 
         TestProfile profile = TestProfile.M;
 
-        if (args.length > 0) {
-            profile = TestProfile.valueOf(args[0]);
+        if (cmdline.hasOption('p')) {
+            profile = TestProfile.valueOf(cmdline.getOptionValue('p'));
         }
 
         System.out.println("Test profile: " + profile.name());
+
+        int time = -1;
+        if (cmdline.hasOption("time")) {
+            time = Integer.parseInt(cmdline.getOptionValue("time"));
+        }
+
+        System.out.println("Time: " + time);
+
 
         prepareClasses(profile.maxClassesPerLoader, profile.sizeSpec);
 
@@ -289,10 +319,17 @@ public class MultiThreadStress {
             t.start();
         }
 
-        System.out.println("<press key to stop test>");
-        System.in.read();
+        if (time != -1) {
+            System.out.println("time: " + time + "seconds...");
+            try {
+                Thread.sleep(time * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            MiscUtils.waitForKeyPress("press key to stop test");
+        }
 
-        while(_doStop) {}
         _doStop = true;
 
         for (Thread t: threads) {
@@ -303,9 +340,10 @@ public class MultiThreadStress {
             }
         }
 
+        MiscUtils.waitForKeyPress("before final gc");
         System.gc(); System.gc();
-        System.out.println("<press key for final gc>");
-        System.in.read();
+        MiscUtils.waitForKeyPress("after final gc");
+
 
 
     }

@@ -7,6 +7,11 @@ public class Utils {
 		assert(success);
 	}
 
+	static public void createClassFromSource(String classname, String source) {
+		boolean success = InMemoryJavaFileManager.theFileManager().compileSingleFile(classname, source);
+		assert(success);
+	}
+
 	static public String makeRandomSource(int size) {
 	
 		StringBuilder bld = new StringBuilder();
@@ -29,5 +34,6 @@ public class Utils {
 		bld.append("};");
 		return bld.toString();
 	}
-	
+
+
 }
