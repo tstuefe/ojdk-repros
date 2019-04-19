@@ -4,28 +4,27 @@ import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager;
 import de.stuefe.repros.metaspace.internals.Utils;
+import de.stuefe.repros.util.MyTestCaseBase;
+import org.apache.commons.cli.Option;
+
 
 import java.util.LinkedList;
 
-/***
- * 
- * Start the program with -XX:+UseCompressedClassPointers -XX:CompressedClassSpaceSize=10m.
- * 
- * Test loads a number of small classes, each in its own classloader. Then removes them and does
- * a GC. Then starts loading large classes until an OOM occurs.
- * 
- * @author Thomas Stuefe
- *
- */
-public class BreatheInBreatheOut {
 
-	private static String nameClass(int number, int sizeFactor) {
-        return "myclass_size_" + sizeFactor + "_number_" + number;
+public class BreatheInBreatheOut extends MyTestCaseBase {
+
+    public static void main(String[] args) throws Exception {
+        BreatheInBreatheOut test = new BreatheInBreatheOut();
+        test.run(args);
+    }
+
+	private static String nameClass(int number) {
+        return "myclass_" + number;
     }
 
 	private static void generateClasses(int numClasses, int sizeFactor) {
         for (int i = 0; i < numClasses; i++) {
-            String className = nameClass(i, sizeFactor);
+            String className = nameClass(i);
             Utils.createRandomClass(className, sizeFactor);
             if (i % 100 == 0) {
                 System.out.println(i + "...");
@@ -33,79 +32,85 @@ public class BreatheInBreatheOut {
         }
     }
 
-	public static void main(String args[]) throws Exception {
+	private void run(String args[]) throws Exception {
 
-        int numSmallClasses = 3000;
-        int sizeFactorSmallClasses = 1;
-        int numLargeClasses = 300;
-        int sizeFactorLargeClasses = 100;
+        Option[] options = new Option[]{
+                Option.builder()
+                        .longOpt("num-small-loaders")
+                        .hasArg()
+                        .build(),
+                Option.builder()
+                        .longOpt("num-classes-per-small-loader")
+                        .hasArg()
+                        .build(),
+                Option.builder()
+                        .longOpt("num-large-loaders")
+                        .hasArg()
+                        .build(),
+                Option.builder()
+                        .longOpt("num-classes-per-large-loader")
+                        .hasArg()
+                        .build(),
+                Option.builder()
+                        .longOpt("class-size")
+                        .hasArg()
+                        .build()
+        };
 
-        if (args.length > 0) {
-            numSmallClasses = Integer.parseInt(args[0]);
-            numLargeClasses = Integer.parseInt(args[1]);
-        }
+        prolog(getClass(), args, options);
 
-        System.out.print("Generate in memory class files...");
-        System.out.print("Small (" + numSmallClasses + ") ...");
-        generateClasses(numSmallClasses, sizeFactorSmallClasses);
-        System.out.print("Done.");
-        System.out.print("Large (" + numLargeClasses + ") ...");
-        generateClasses(numLargeClasses, sizeFactorLargeClasses);
-        System.out.println("Done.");
+        int numSmallLoaders = Integer.parseInt(
+                cmdline.getOptionValue("num-small-loaders", "3000"));
+        int numClassesPerSmallLoader = Integer.parseInt(
+                cmdline.getOptionValue("num-classes-per-small-loader", "1"));
+        int numLargeLoaders = Integer.parseInt(
+                cmdline.getOptionValue("num-large-loaders", "1"));
+        int numClassesPerLargeLoader = Integer.parseInt(
+                cmdline.getOptionValue("num-classes-per-large-loader", "3000"));
+        int sizeFactorClasses = Integer.parseInt(
+                cmdline.getOptionValue("class-size", "10"));
+
+        int num_to_generate = Math.max(numClassesPerLargeLoader, numClassesPerSmallLoader);
+        System.out.print("Generate " + num_to_generate + " in memory class files...");
+        generateClasses(num_to_generate, sizeFactorClasses);
 
         System.gc();
-        MiscUtils.waitForKeyPress();
+        System.gc();
+        waitForKeyPress("Before breathing in...");
 
         for (int run = 0; run < 1000; run ++) {
 
-            LinkedList<ClassLoader> smallLoaders = new LinkedList<ClassLoader>();
+            LinkedList<ClassLoader> loaders = new LinkedList<ClassLoader>();
 
-            // load small classes
-            System.out.print("Load " + numSmallClasses + " small classes into unique class loaders...");
-			for (int i = 0; i < numSmallClasses; i++) {
-				String className = nameClass(i, sizeFactorSmallClasses);
-                InMemoryClassLoader aSmallLoader = new InMemoryClassLoader("small-loader", null);
-                smallLoaders.add(aSmallLoader);
-				Class<?> clazz = Class.forName(className, true, aSmallLoader);
-                if (i % 100 == 0) {
-                    System.out.println(i + "...");
-                }
-			}
-			System.out.print("Done.");
+            boolean do_small_loaders = (run % 2 == 0);
 
-            MiscUtils.waitForKeyPress("before GC");
+            int num_loaders =
+                    do_small_loaders ? numSmallLoaders : numLargeLoaders;
+            int num_classes_per_loader =
+                    do_small_loaders ? numClassesPerSmallLoader : numClassesPerLargeLoader;
 
-			// clean all up
-            System.out.print("GC...");
-            smallLoaders.clear();
-			System.gc();
-            System.out.println("Done.");
-
-            MiscUtils.waitForKeyPress();
-
-
-            ///////////////////
-
-            // Now create, inside a single classloader, load large classes.
-            InMemoryClassLoader largeLoader = new InMemoryClassLoader("large-loader", null);
-            System.out.print("Load " + numLargeClasses + " large classes into a single class loader...");
-            for (int i = 0; i < numLargeClasses; i++) {
-                String className = nameClass(i, sizeFactorLargeClasses);
-                Class<?> clazz = Class.forName(className, true, largeLoader);
-                if (i % 100 == 0) {
-                    System.out.println(i + "...");
+            System.out.print("Load " + numClassesPerSmallLoader + " classes into " + numSmallLoaders + " loaders...");
+	        for (int nloader = 0; nloader < num_loaders; nloader ++) {
+                InMemoryClassLoader loader = new InMemoryClassLoader(
+                        (do_small_loaders ? "small" : "large") + "-loader-" + nloader,
+                        null);
+                loaders.add(loader);
+                for (int ncls = 0; ncls < num_classes_per_loader; ncls++) {
+                    String className = nameClass(ncls);
+                    Class<?> clazz = Class.forName(className, true, loader);
                 }
             }
-            System.out.print("Done.");
+			System.out.println("Done.");
 
-            MiscUtils.waitForKeyPress("before GC");
+            waitForKeyPress("Before GC.");
 
-            System.out.print("GC...");
-            largeLoader = null;
+			// clean all up
+            loaders.clear();
+			System.gc();
             System.gc();
             System.out.println("Done.");
 
-            MiscUtils.waitForKeyPress();
+            waitForKeyPress("after GC");
 
 		}
 	}

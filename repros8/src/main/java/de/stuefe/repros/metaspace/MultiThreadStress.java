@@ -3,15 +3,15 @@ package de.stuefe.repros.metaspace;
 import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.CommandLineHelpers;
+import de.stuefe.repros.util.MyTestCaseBase;
 import org.apache.commons.cli.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
 
-public class MultiThreadStress {
+public class MultiThreadStress extends MyTestCaseBase {
+
 
     static Random rand = new Random();
 
@@ -35,7 +35,9 @@ public class MultiThreadStress {
         public int getAvgSize() {
             return avgSize;
         }
-    };
+    }
+
+    ;
 
     static String nameClass(SizeSpec sizeSpec, int id) {
         return "myclass_" + sizeSpec.name() + "_" + id;
@@ -43,11 +45,11 @@ public class MultiThreadStress {
 
     static int wobbleRandomlyAroundPivotPoint(int pivot) {
         int amount = Integer.max(pivot / 10, 1);
-        return  wobbleRandomlyAroundPivotPoint(pivot, amount);
+        return wobbleRandomlyAroundPivotPoint(pivot, amount);
     }
 
     static int wobbleRandomlyAroundPivotPoint(int pivot, int amount) {
-        return  wobbleRandomlyAroundPivotPoint(pivot, amount, 0, Integer.MAX_VALUE);
+        return wobbleRandomlyAroundPivotPoint(pivot, amount, 0, Integer.MAX_VALUE);
     }
 
     static int wobbleRandomlyAroundPivotPoint(int pivot, int amount, int min, int max) {
@@ -99,7 +101,7 @@ public class MultiThreadStress {
         private void maybeLoadAClass() {
             if (rand.nextInt(9) < 3 && _classesLoaded < _maxClassesToLoad) {
                 loadClassByNumber(_classesLoaded);
-                _classesLoaded ++;
+                _classesLoaded++;
             }
         }
 
@@ -121,7 +123,9 @@ public class MultiThreadStress {
             return false;
         }
 
-    };
+    }
+
+    ;
 
     static class TestThread extends Thread {
 
@@ -234,10 +238,10 @@ public class MultiThreadStress {
     enum TestProfile {
 
         // default test profile
-        XS(10, 10, 10, 1, 50,1000, SizeSpec.XS ),
-        XS_NOGC(10, 10, 10, 1, -1,1000, SizeSpec.XS ),
-        M(10, 10, 100, 1, 50, 1000, SizeSpec.M ),
-        M_NOGC(10, 10, 100, 1, -1, 1000, SizeSpec.M ),
+        XS(10, 10, 10, 1, 50, 1000, SizeSpec.XS),
+        XS_NOGC(10, 10, 10, 1, -1, 1000, SizeSpec.XS),
+        M(10, 10, 100, 1, 50, 1000, SizeSpec.M),
+        M_NOGC(10, 10, 100, 1, -1, 1000, SizeSpec.M),
         ;
 
         final int numThreads;
@@ -261,28 +265,28 @@ public class MultiThreadStress {
         static String validKeys() {
             String s = "";
             for (TestProfile p : TestProfile.values()) {
-                s += p.toString(); s += " ";
+                s += p.toString();
+                s += " ";
             }
             return s;
         }
 
     }
 
-    public static void main(String[] args) throws Exception {
+    private void run(String[] args) throws Exception {
 
-        Options options = CommandLineHelpers.prepareOptions();
-        options.addOption("p", "profile", true, "test profile (one of " + TestProfile.validKeys() + ").");
-        options.addOption(
+        Option[] myOptions = new Option[]{
+                Option.builder("p").longOpt("profile")
+                        .hasArg().desc("test profile (one of " + TestProfile.validKeys() + ").")
+                        .build(),
                 Option.builder()
                         .longOpt("time")
                         .hasArg()
                         .desc("time this test should take, in seconds.")
-                        .build());
+                        .build()
+        };
 
-        CommandLineParser parser = new DefaultParser();
-        CommandLine cmdline = parser.parse(options, args);
-
-        CommandLineHelpers.handleHelpForClass(cmdline, MultiThreadStress.class, options);
+        super.prolog(MultiThreadStress.class, args, myOptions);
 
         TestProfile profile = TestProfile.M;
 
@@ -310,12 +314,12 @@ public class MultiThreadStress {
         }
 
         ArrayList<Thread> threads = new ArrayList<>();
-        for (int i = 0; i < profile.numThreads; i ++) {
+        for (int i = 0; i < profile.numThreads; i++) {
             TestThread t = new TestThread(profile.maxLoadersPerThread, profile.avgLoaderLifeSpan, profile.maxClassesPerLoader, profile.sizeSpec, profile.avgTickTime);
             threads.add(t);
         }
 
-        for (Thread t: threads) {
+        for (Thread t : threads) {
             t.start();
         }
 
@@ -332,7 +336,7 @@ public class MultiThreadStress {
 
         _doStop = true;
 
-        for (Thread t: threads) {
+        for (Thread t : threads) {
             try {
                 t.join();
             } catch (InterruptedException e) {
@@ -341,11 +345,16 @@ public class MultiThreadStress {
         }
 
         MiscUtils.waitForKeyPress("before final gc");
-        System.gc(); System.gc();
+        System.gc();
+        System.gc();
         MiscUtils.waitForKeyPress("after final gc");
 
+    }
 
 
+    public static void main(String[] args) throws Exception {
+        MultiThreadStress test = new MultiThreadStress();
+        test.run(args);
     }
 
 
