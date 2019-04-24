@@ -3,10 +3,59 @@ package de.stuefe.repros.metaspace;
 import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
+import de.stuefe.repros.util.MyTestCaseBase;
+import org.apache.commons.cli.Option;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Random;
 
-public class ManyLoadersWithWildyVaryingLifespans {
+public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
+
+
+    public static void main(String args[]) throws Exception {
+        ManyLoadersWithWildyVaryingLifespans test = new ManyLoadersWithWildyVaryingLifespans();
+        test.run(args);
+    }
+
+    private static String nameClass(int number) {
+        return "myclass_" + number;
+    }
+
+    private static void generateClasses(int num, int sizeFactor) {
+        for (int j = 0; j < num; j++) {
+            String className = nameClass(j);
+            Utils.createRandomClass(className, sizeFactor);
+        }
+    }
+
+    Option options_num_loaders =
+            Option.builder()
+                    .longOpt("num-loaders")
+                    .hasArg().type(Long.class)
+                    .desc("number of loaders")
+                    .build();
+
+    Option options_num_classes_per_loader =
+            Option.builder()
+                    .longOpt("num-classes-per-loader")
+                    .hasArg().type(Long.class)
+                    .desc("number of classes per loader")
+                    .build();
+
+    Option options_size_classes =
+            Option.builder()
+                    .longOpt("class-size")
+                    .hasArg().type(Long.class)
+                    .desc("avg class size factor")
+                    .build();
+
+    class LoaderGeneration {
+        ArrayList<ClassLoader> loaders = new ArrayList<>();
+        ArrayList<Class> loaded_classes = new ArrayList<>();
+    }
+
+    ;
 
     static class LoaderHolder {
         final ClassLoader loader;
@@ -24,33 +73,22 @@ public class ManyLoadersWithWildyVaryingLifespans {
 
     }
 
-    private static String nameClass(int number) {
-        return "myclass_" + number;
-    }
+    private void run(String[] args) throws Exception {
 
-    private static void generateClasses(int num, int sizeFactor) {
-        for (int j = 0; j < num; j++) {
-            String className = nameClass(j);
-            Utils.createRandomClass(className, sizeFactor);
-        }
-    }
+        Option[] options = new Option[]{
+                options_num_loaders,
+                options_num_classes_per_loader,
+                options_size_classes};
 
-    public static void main(String args[]) throws Exception {
+        prolog(getClass(), args, options);
+
+        int numLoaders = Integer.parseInt(options_num_loaders.getValue("300"));
+        int classesPerLoader =
+                Integer.parseInt(options_num_classes_per_loader.getValue("100"));
+        int sizeFactor =
+                Integer.parseInt(options_size_classes.getValue("10"));
 
         Random rand = new Random();
-
-        // n Loaders, each one shall load ten classes. Size factor determines the avg class size.
-        // small factor of 1 will favour small chunk sizes.
-        int numLoaders = 3000;
-        int sizeFactor = 1;
-        int classesPerLoader = 10;
-
-        if (args.length > 0) {
-            numLoaders = Integer.parseInt(args[0]);
-            if (args.length > 1) {
-                sizeFactor = Integer.parseInt(args[1]);
-            }
-        }
 
         int numClasses = numLoaders * 10;
 
@@ -79,39 +117,41 @@ public class ManyLoadersWithWildyVaryingLifespans {
 
         // Clean up class generation remnants.
         System.gc();
-        MiscUtils.waitForKeyPress();
+        waitForKeyPress();
 
         int numLoadersAlive = numLoaders;
 
-        // tick tock
-        // Every nth tick we stop and let the user take a look.
+        // Slowly release loaders. Every once in a while we stop, gc and then
+        // look at Metaspace development.
         final int stopInterval = numLoadersAlive / 10;
         int nextStopAt = numLoadersAlive;
         while (numLoadersAlive > 0) {
 
-            if (numLoadersAlive <= nextStopAt) {
-                // clean all up
-                System.gc();
-                System.out.println("Alive: " + numLoadersAlive);
-                de.stuefe.repros.process.Utils.executeCommand("/bin/ps", "-o", "pid,rss", "" + de.stuefe.repros.process.Utils.getPid());
-                de.stuefe.repros.process.Utils.executeCommand("/shared/projects/openjdk/jdks/openjdk11/bin/jcmd", "" + de.stuefe.repros.process.Utils.getPid(), "VM.metaspace", "basic", "scale=k");
-                MiscUtils.waitForKeyPress();
-                nextStopAt -= stopInterval;
-            }
-
             int numUnloaded = 0;
             for (int ldrIdx = 0; ldrIdx < numLoaders; ldrIdx ++) {
                 if (_loaders[ldrIdx] != null && _loaders[ldrIdx].tick()) {
-                    // unload this guy
                     _loaders[ldrIdx] = null;
                     numUnloaded ++;
                 }
             }
             numLoadersAlive -= numUnloaded;
 
+            if (numLoadersAlive <= nextStopAt) {
+                // clean all up
+                System.gc();
+                System.out.println("Alive: " + numLoadersAlive);
+                de.stuefe.repros.process.Utils.executeCommand("/bin/ps", "-o", "pid,rss", "" + de.stuefe.repros.process.Utils.getPid());
+
+                String jcmdBinary = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "jcmd";
+                de.stuefe.repros.process.Utils.executeCommand(jcmdBinary, "" + de.stuefe.repros.process.Utils.getPid(), "VM.metaspace", "basic", "scale=k");
+
+                waitForKeyPress();
+                nextStopAt -= stopInterval;
+            }
+
         }
 
-        MiscUtils.waitForKeyPress();
+        waitForKeyPress();
 
         System.out.println("Done");
 

@@ -11,20 +11,22 @@ import java.util.ArrayList;
  * This test demonstrates the tendency of the Metaspace allocator to hold on onto
  * memory even when class loaders are unloaded.
  *
- * We create batches ("generations") of class loaders. Each loader is created and
- * immediately loads n classes. Loaders from different generations are created
- * interleaved, so in metaspace their chunks are placed adjacent of each other.
+ * We create a number of class loaders, sequentially, and order them into groups
+ * (generations) such that they are interleaved (loader of gen 1 is followed by
+ * one of gen 2 and so on).
  *
- * Then, we release all but one batch of classes and watch how metaspace behaves.
- * Ideally it should return the released memory to the OS, but since we created
- * high fragmentation this will not or only partly happen.
- *
- * By default we create four generations. As can be monitored from the outside,
- * even when all but one generation of loaders is released again, memory will
- * be retained almost completely.
+ * Each group of loaders is released, one after the other. Because they are interleaved,
+ * we have a high degree of fragmentation. Ideally the released memory should be returned
+ * to the OS, but since we created high fragmentation this will not or only partly happen.
  *
  */
 public class InterleavedLoaders extends MyTestCaseBase {
+
+
+    public static void main(String args[]) throws Exception {
+        InterleavedLoaders test = new InterleavedLoaders();
+        test.run(args);
+    }
 
     private static String nameClass(int number) {
         return "myclass_" + number;
@@ -160,8 +162,4 @@ public class InterleavedLoaders extends MyTestCaseBase {
 
     }
 
-    public static void main(String args[]) throws Exception {
-        InterleavedLoaders test = new InterleavedLoaders();
-        test.run(args);
-    }
 }
