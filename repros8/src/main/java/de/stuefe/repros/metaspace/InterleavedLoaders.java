@@ -36,7 +36,11 @@ public class InterleavedLoaders extends MyTestCaseBase {
         for (int j = 0; j < num; j++) {
             String className = nameClass(j);
             Utils.createRandomClass(className, sizeFactor);
+            if (j % (num / 20) == 0) {
+                System.out.print("*");
+            }
         }
+        System.out.println(".");
     }
 
     Option options_num_generations =
@@ -60,6 +64,13 @@ public class InterleavedLoaders extends MyTestCaseBase {
                     .desc("number of classes per loader")
                     .build();
 
+    Option options_repeat_count =
+            Option.builder()
+                    .longOpt("repeat")
+                    .hasArg().type(Long.class)
+                    .desc("Repeat multiple times.")
+                    .build();
+
     Option options_size_classes =
             Option.builder()
                     .longOpt("class-size")
@@ -67,12 +78,32 @@ public class InterleavedLoaders extends MyTestCaseBase {
                     .desc("avg class size factor")
                     .build();
 
+
     class LoaderGeneration {
         ArrayList<ClassLoader> loaders = new ArrayList<>();
         ArrayList<Class> loaded_classes = new ArrayList<>();
     }
 
-    ;
+    private void loadInterleavedLoaders(LoaderGeneration[] generations, int numGenerations,
+                                        int numLoadersPerGeneration, int numClassesPerLoader) throws ClassNotFoundException {
+        int numLoadersTotal = numLoadersPerGeneration * numGenerations;
+        for (int nloader = 0; nloader < numLoadersTotal; nloader++) {
+            ClassLoader loader = new InMemoryClassLoader("myloader", null);
+            int gen = nloader % numGenerations;
+            generations[gen].loaders.add(loader);
+            for (int nclass = 0; nclass < numClassesPerLoader; nclass++) {
+                // Let it load all classes
+                Class<?> clazz = Class.forName(nameClass(nclass), true, loader);
+                generations[gen].loaded_classes.add(clazz);
+            }
+            if (nloader % (numLoadersTotal / 20) == 0) {
+                System.out.print("*");
+            }
+        }
+        System.gc();
+        System.gc();
+        System.out.println(".");
+    }
 
     private void run(String[] args) throws Exception {
 
@@ -80,7 +111,9 @@ public class InterleavedLoaders extends MyTestCaseBase {
                 options_num_generations,
                 options_num_loaders_per_gen,
                 options_num_classes_per_loader,
-                options_size_classes};
+                options_size_classes,
+                options_repeat_count
+                };
 
         prolog(getClass(), args, options);
 
@@ -90,6 +123,7 @@ public class InterleavedLoaders extends MyTestCaseBase {
                 Integer.parseInt(options_num_classes_per_loader.getValue("100"));
         int size_classes =
                 Integer.parseInt(options_size_classes.getValue("10"));
+        final int repeat_count = Integer.parseInt(options_repeat_count.getValue( "0"));
 
         System.out.println("Generating " + num_classes_per_loader + " classes...");
         generateClasses(num_classes_per_loader, size_classes);
@@ -103,62 +137,30 @@ public class InterleavedLoaders extends MyTestCaseBase {
 
         waitForKeyPress("Will load " + num_generations +
                 " generations of " + num_loaders_per_gen + " loaders each, "
-                + " each loader loading " + num_classes_per_loader + " classes...");
+                + " each loader loading " + num_classes_per_loader + " classes...", 4);
 
-        // First create all generations. Interleaved.
-        for (int nloader = 0; nloader < num_loaders_per_gen * num_generations; nloader++) {
-            ClassLoader loader = new InMemoryClassLoader("myloader", null);
-            int gen = nloader % num_generations;
-            generations[gen].loaders.add(loader);
-            for (int nclass = 0; nclass < num_classes_per_loader; nclass++) {
-                // Let it load all classes
-                Class<?> clazz = Class.forName(nameClass(nclass), true, loader);
-                generations[gen].loaded_classes.add(clazz);
-            }
-        }
+        for (int nrun = 0; nrun < repeat_count + 1; nrun++) {
 
-        waitForKeyPress("After loading...");
+            loadInterleavedLoaders(generations, num_generations, num_loaders_per_gen, num_classes_per_loader);
 
-        // Now: free all generations, one after the other, until only one is left.
-        // Reallocate again until all generations are full. Repeat, but each time another
-        // generation is the last one.
-        // This should give us a "breathe-in-and-out" effect which should demonstrate how easily
-        // VM lets go of unused metaspace even when we have fragmentation.
-        for (int nrun = 0; nrun < 1000; nrun++) {
-            int surviving_generation = nrun % num_generations;
+            waitForKeyPress("After loading...");
+
+            // Now: free all generations, one after the other.
+            // This should give us a "breathe-out" effect which should demonstrate how much memory is retained by
+            // the VM after letting go of one loader generation, in the face of fragmentation.
 
             for (int i = 0; i < num_generations; i++) {
-                if (i != surviving_generation) {
-                    waitForKeyPress("Before freeing generation " + i + "...");
-                    generations[i].loaders.clear();
-                    generations[i].loaded_classes.clear();
-                    System.gc();
-                    System.gc();
-                    waitForKeyPress("After freeing generation " + i + ".");
-                }
+                waitForKeyPress("Before freeing generation " + i + "...", 4);
+                generations[i].loaders.clear();
+                generations[i].loaded_classes.clear();
+                System.gc();
+                System.gc();
+                waitForKeyPress("After freeing generation " + i + ".", 4);
             }
-
-            // Now re-create all generations, interleaved.
-            waitForKeyPress("Before re-loading freed generations");
-            for (int nloader = 0; nloader < num_loaders_per_gen * num_generations; nloader++) {
-                int gen = nloader % num_generations;
-                if (gen != surviving_generation) {
-                    ClassLoader loader = new InMemoryClassLoader("myloader", null);
-                    generations[gen].loaders.add(loader);
-                    for (int nclass = 0; nclass < num_classes_per_loader; nclass++) {
-                        // Let it load all classes
-                        Class<?> clazz = Class.forName(nameClass(nclass), true, loader);
-                        generations[gen].loaded_classes.add(clazz);
-                    }
-                }
-            }
-            System.gc();
-            System.gc();
-            waitForKeyPress("After re-loading freed generations ");
 
         }
 
-        System.out.println("Done");
+        waitForKeyPress("Done", 4);
 
     }
 
