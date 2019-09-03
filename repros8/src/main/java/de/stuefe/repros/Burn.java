@@ -1,6 +1,19 @@
 package de.stuefe.repros;
 
-public class Burn {
+import picocli.CommandLine;
+
+import java.util.concurrent.Callable;
+
+
+@CommandLine.Command(name = "Burn", mixinStandardHelpOptions = true,
+        description = "Just burn cpu on a number of threads.")
+public class Burn implements Callable<Integer> {
+
+    @CommandLine.Parameters(index = "0", description = "Number of threads.")
+    int numThreads = 1;
+
+    @CommandLine.Parameters(index = "1", description = "Number of threads.")
+    int seconds = 10;
 
     volatile static long l = 0;
     volatile static boolean stop = false;
@@ -12,15 +25,15 @@ public class Burn {
         return fibonacci(n-1) + fibonacci(n-2);
     }
 
-    static public void main(String[] args) throws InterruptedException {
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new Burn()).execute(args);
+        System.exit(exitCode);
+    }
 
-        if (args.length != 2) {
-            System.out.println("Usage: Burn <num threads> <seconds>");
-        }
+    @Override
+    public Integer call() throws Exception {
 
-        int numThreads = Integer.parseInt(args[0]);
-        int seconds = Integer.parseInt(args[1]);
-
+        System.out.println("Burning on " + numThreads + " threads for " + seconds + " seconds.");
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -44,6 +57,7 @@ public class Burn {
             ts[i].join();
         }
 
+        return  0;
     }
 
 

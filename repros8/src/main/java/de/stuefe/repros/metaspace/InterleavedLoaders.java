@@ -117,6 +117,8 @@ public class InterleavedLoaders extends MyTestCaseBase {
 
         prolog(getClass(), args, options);
 
+System.out.println(options_num_generations.getValue());
+
         int num_generations = Integer.parseInt(options_num_generations.getValue("4"));
         int num_loaders_per_gen = Integer.parseInt(options_num_loaders_per_gen.getValue("100"));
         int num_classes_per_loader =

@@ -82,6 +82,13 @@ public abstract class MyTestCaseBase {
             positionalArguments = new String[] {};
         }
 
+        for (Option o : cmdline.getOptions()) {
+            if (cmdline.hasOption(o.getLongOpt())) {
+                System.out.println(o.getLongOpt() + " " +
+                         cmdline.getOptionValue(o.getLongOpt()));
+            }
+        }
+
     }
 
     /***
@@ -141,5 +148,8 @@ public abstract class MyTestCaseBase {
         waitForKeyPress(null);
     }
 
+    protected String getOptionValue(Option o) {
+        return o.hasLongOpt() ? cmdline.getOptionValue(o.getLongOpt()) : cmdline.getOptionValue(o.getOpt());
+    }
 
 }

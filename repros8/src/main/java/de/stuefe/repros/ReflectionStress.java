@@ -2,12 +2,28 @@ package de.stuefe.repros;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.concurrent.Callable;
 
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager;
 import de.stuefe.repros.metaspace.internals.Utils;
+import picocli.CommandLine;
 
-public class ReflectionStress {
+@CommandLine.Command(name = "ReflectionStress", mixinStandardHelpOptions = true,
+        description = "Test reflection.")
+public class ReflectionStress implements Callable<Integer> {
+
+    @CommandLine.Parameters(index = "0", description = "Number of classes.")
+    int numClasses;
+
+    @CommandLine.Parameters(index = "0", description = "Size of classes (default 5).")
+    int sizeClasses = 5;
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new ReflectionStress()).execute(args);
+        System.exit(exitCode);
+    }
+
 
     private static void createRandomClass(String classname, int sizeFactor) {
         String code = Utils.makeRandomSource(sizeFactor).replaceAll("CLASSNAME", classname);
@@ -29,20 +45,13 @@ public class ReflectionStress {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    @Override
+    public Integer call() throws Exception {
 
         // Generate n random classes named "myclass<i>". Each shall have one method for
         // public int get_i<n>(), public byte get_b<n>(), public String get_s<n>()
         // Invoke them each 100 times.
-        int numClasses = 100;
-        int sizeClasses = 5;
 
-        if (args.length > 0) {
-            numClasses = Integer.parseInt(args[0]);
-            if (args.length > 1) {
-                sizeClasses = Integer.parseInt(args[1]);
-            }
-        }
 
         System.out.print("Generate in memory class files...");
         System.out.print("(" + numClasses + ") ...");
@@ -106,6 +115,7 @@ public class ReflectionStress {
 
         }
 
+        return 0;
     }
 
 }
