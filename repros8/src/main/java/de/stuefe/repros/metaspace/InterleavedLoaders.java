@@ -2,10 +2,11 @@ package de.stuefe.repros.metaspace;
 
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.Option;
+import picocli.CommandLine;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 /**
  * This test demonstrates the tendency of the Metaspace allocator to hold on onto
@@ -20,12 +21,14 @@ import java.util.ArrayList;
  * to the OS, but since we created high fragmentation this will not or only partly happen.
  *
  */
-public class InterleavedLoaders extends MyTestCaseBase {
 
+@CommandLine.Command(name = "InterleavedLoaders", mixinStandardHelpOptions = true,
+        description = "InterleavedLoaders repro.")
+public class InterleavedLoaders implements Callable<Integer> {
 
-    public static void main(String args[]) throws Exception {
-        InterleavedLoaders test = new InterleavedLoaders();
-        test.run(args);
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new InterleavedLoaders()).execute(args);
+        System.exit(exitCode);
     }
 
     private static String nameClass(int number) {
@@ -43,40 +46,54 @@ public class InterleavedLoaders extends MyTestCaseBase {
         System.out.println(".");
     }
 
-    Option options_num_generations =
-            Option.builder()
-                    .longOpt("num-gens")
-                    .hasArg().type(Long.class)
-                    .desc("number of generations")
-                    .build();
+    @CommandLine.Option(names = { "--num-clusters" }, defaultValue = "4",
+            description = "Number of loader clusters.")
+    int num_clusters;
 
-    Option options_num_loaders_per_gen =
-            Option.builder()
-                    .longOpt("num-loaders")
-                    .hasArg().type(Long.class)
-                    .desc("number of loaders per generation")
-                    .build();
+    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "100",
+            description = "Number of loaders per cluster.")
+    int num_loaders_per_cluster;
 
-    Option options_num_classes_per_loader =
-            Option.builder()
-                    .longOpt("num-classes-per-loader")
-                    .hasArg().type(Long.class)
-                    .desc("number of classes per loader")
-                    .build();
+    @CommandLine.Option(names = { "--num-classes" }, defaultValue = "100",
+            description = "Number of classes per loader.")
+    int num_classes_per_loader;
 
-    Option options_repeat_count =
-            Option.builder()
-                    .longOpt("repeat")
-                    .hasArg().type(Long.class)
-                    .desc("Repeat multiple times.")
-                    .build();
+    @CommandLine.Option(names = { "--class-size" }, defaultValue = "10",
+            description = "Class size factor.")
+    int class_size_factor;
 
-    Option options_size_classes =
-            Option.builder()
-                    .longOpt("class-size")
-                    .hasArg().type(Long.class)
-                    .desc("avg class size factor")
-                    .build();
+    @CommandLine.Option(names = { "--repeat", "-n" }, defaultValue = "1",
+            description = "Repeat.")
+    int num_repeat;
+
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+    int unattendedModeWaitSecs = 4;
+
+    void waitForKeyPress(String message) {
+        if (message != null) {
+            System.out.println(message);
+        }
+        System.out.print("<press key>");
+        if (auto_yes) {
+            System.out.print (" ... (auto-yes) ");
+            if (unattendedModeWaitSecs > 0) {
+                System.out.print("... waiting " +unattendedModeWaitSecs + " secs ...");
+                try {
+                    Thread.sleep(unattendedModeWaitSecs * 1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        } else {
+            try {
+                System.in.read();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println (" ... continuing.");
+    }
 
 
     class LoaderGeneration {
@@ -105,45 +122,32 @@ public class InterleavedLoaders extends MyTestCaseBase {
         System.out.println(".");
     }
 
-    private void run(String[] args) throws Exception {
 
-        Option[] options = new Option[]{
-                options_num_generations,
-                options_num_loaders_per_gen,
-                options_num_classes_per_loader,
-                options_size_classes,
-                options_repeat_count
-                };
+    @Override
+    public Integer call() throws Exception {
 
-        prolog(getClass(), args, options);
+        System.out.println("Loader clusters: " + num_clusters + ".");
+        System.out.println("Loaders per cluster: " + num_loaders_per_cluster + ".");
+        System.out.println("Classes per loader: " + num_classes_per_loader + ".");
+        System.out.println("Class size factor: " + class_size_factor + ".");
+        System.out.println("Repeat count: " + num_repeat + ".");
 
-System.out.println(options_num_generations.getValue());
+        generateClasses(num_classes_per_loader, class_size_factor);
 
-        int num_generations = Integer.parseInt(options_num_generations.getValue("4"));
-        int num_loaders_per_gen = Integer.parseInt(options_num_loaders_per_gen.getValue("100"));
-        int num_classes_per_loader =
-                Integer.parseInt(options_num_classes_per_loader.getValue("100"));
-        int size_classes =
-                Integer.parseInt(options_size_classes.getValue("10"));
-        final int repeat_count = Integer.parseInt(options_repeat_count.getValue( "0"));
-
-        System.out.println("Generating " + num_classes_per_loader + " classes...");
-        generateClasses(num_classes_per_loader, size_classes);
-
-        LoaderGeneration[] generations = new LoaderGeneration[num_generations];
-        for (int i = 0; i < num_generations; i++) {
+        LoaderGeneration[] generations = new LoaderGeneration[num_clusters];
+        for (int i = 0; i < num_clusters; i++) {
             generations[i] = new LoaderGeneration();
         }
         System.gc();
         System.gc();
 
-        waitForKeyPress("Will load " + num_generations +
-                " generations of " + num_loaders_per_gen + " loaders each, "
-                + " each loader loading " + num_classes_per_loader + " classes...", 4);
+        waitForKeyPress("Will load " + num_clusters +
+                " generations of " + num_loaders_per_cluster + " loaders each, "
+                + " each loader loading " + num_classes_per_loader + " classes...");
 
-        for (int nrun = 0; nrun < repeat_count + 1; nrun++) {
+        for (int nrun = 0; nrun < num_repeat; nrun++) {
 
-            loadInterleavedLoaders(generations, num_generations, num_loaders_per_gen, num_classes_per_loader);
+            loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
 
             waitForKeyPress("After loading...");
 
@@ -151,19 +155,20 @@ System.out.println(options_num_generations.getValue());
             // This should give us a "breathe-out" effect which should demonstrate how much memory is retained by
             // the VM after letting go of one loader generation, in the face of fragmentation.
 
-            for (int i = 0; i < num_generations; i++) {
-                waitForKeyPress("Before freeing generation " + i + "...", 4);
+            for (int i = 0; i < num_clusters; i++) {
+                waitForKeyPress("Before freeing generation " + i + "...");
                 generations[i].loaders.clear();
                 generations[i].loaded_classes.clear();
                 System.gc();
                 System.gc();
-                waitForKeyPress("After freeing generation " + i + ".", 4);
+                waitForKeyPress("After freeing generation " + i + ".");
             }
 
         }
 
-        waitForKeyPress("Done", 4);
+        waitForKeyPress("Done");
 
+        return 0;
     }
 
 }
