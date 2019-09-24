@@ -1,6 +1,5 @@
 package de.stuefe.repros.metaspace;
 
-import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
 import de.stuefe.repros.util.MyTestCaseBase;

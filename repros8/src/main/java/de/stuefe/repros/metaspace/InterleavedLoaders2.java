@@ -46,11 +46,11 @@ public class InterleavedLoaders2 implements Callable<Integer> {
         System.out.println(".");
     }
 
-    @CommandLine.Option(names = { "--num-clusters" }, defaultValue = "4",
+    @CommandLine.Option(names = { "--num-clusters" }, defaultValue = "5",
             description = "Number of loader clusters.")
     int num_clusters;
 
-    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "100",
+    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "80",
             description = "Number of loaders per cluster.")
     int num_loaders_per_cluster;
 
@@ -160,7 +160,8 @@ public class InterleavedLoaders2 implements Callable<Integer> {
 
         waitSome("After loading...");
 
-        for (int i = num_clusters; i > 1; i--) {
+        // get rid of all but the last two
+        for (int i = num_clusters - 1; i >= 2; i--) {
             waitSome("Before freeing generation " + i + "...");
             generations[i].loaders.clear();
             generations[i].loaded_classes.clear();
@@ -169,13 +170,14 @@ public class InterleavedLoaders2 implements Callable<Integer> {
             waitSome("After freeing generation " + i + ".");
         }
 
-        waitSome(null, 30);
+        waitSome(null, 60);
 
         loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
 
         waitSome("After loading.");
 
-        for (int i = num_clusters; i > 0; i--) {
+        // Now free all
+        for (int i = num_clusters - 1; i >= 0; i--) {
             waitSome("Before freeing generation " + i + "...");
             generations[i].loaders.clear();
             generations[i].loaded_classes.clear();
