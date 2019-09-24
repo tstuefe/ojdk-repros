@@ -1,19 +1,31 @@
 package de.stuefe.repros.metaspace;
 
+import de.stuefe.repros.TestCaseBase;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.Option;
+import picocli.CommandLine;
 
 
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
 
 
-public class BreatheInBreatheOut extends MyTestCaseBase {
+@CommandLine.Command(name = "BreatheInBreatheOut", mixinStandardHelpOptions = true,
+        description = "BreatheInBreatheOut repro.")
+public class BreatheInBreatheOut extends TestCaseBase implements Callable<Integer> {
 
-    public static void main(String[] args) throws Exception {
-        BreatheInBreatheOut test = new BreatheInBreatheOut();
-        test.run(args);
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+    int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
+            description = "Verbose.")
+    boolean verbose;
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new BreatheInBreatheOut()).execute(args);
+        System.exit(exitCode);
     }
 
 	private static String nameClass(int number) {
@@ -30,43 +42,31 @@ public class BreatheInBreatheOut extends MyTestCaseBase {
         }
     }
 
-	private void run(String args[]) throws Exception {
+    @CommandLine.Option(names = { "--num-small-loaders" }, defaultValue = "3000",
+            description = "Number of small loaders.")
+    int numSmallLoaders;
 
-        Option[] options = new Option[]{
-                Option.builder()
-                        .longOpt("num-small-loaders")
-                        .hasArg()
-                        .build(),
-                Option.builder()
-                        .longOpt("num-classes-per-small-loader")
-                        .hasArg()
-                        .build(),
-                Option.builder()
-                        .longOpt("num-large-loaders")
-                        .hasArg()
-                        .build(),
-                Option.builder()
-                        .longOpt("num-classes-per-large-loader")
-                        .hasArg()
-                        .build(),
-                Option.builder()
-                        .longOpt("class-size")
-                        .hasArg()
-                        .build()
-        };
+    @CommandLine.Option(names = { "--num-classes-per-small-loader" }, defaultValue = "1",
+            description = "Number of classes per small loader.")
+    int numClassesPerSmallLoader;
 
-        prolog(getClass(), args, options);
+    @CommandLine.Option(names = { "--num-large-loaders" }, defaultValue = "1",
+            description = "Number of large loaders.")
+    int numLargeLoaders;
 
-        int numSmallLoaders = Integer.parseInt(
-                cmdline.getOptionValue("num-small-loaders", "3000"));
-        int numClassesPerSmallLoader = Integer.parseInt(
-                cmdline.getOptionValue("num-classes-per-small-loader", "1"));
-        int numLargeLoaders = Integer.parseInt(
-                cmdline.getOptionValue("num-large-loaders", "1"));
-        int numClassesPerLargeLoader = Integer.parseInt(
-                cmdline.getOptionValue("num-classes-per-large-loader", "3000"));
-        int sizeFactorClasses = Integer.parseInt(
-                cmdline.getOptionValue("class-size", "10"));
+    @CommandLine.Option(names = { "--num-classes-per-large-loader" }, defaultValue = "3000",
+            description = "Number of classes per large loader.")
+    int numClassesPerLargeLoader;
+
+    @CommandLine.Option(names = { "--class-size" }, defaultValue = "10",
+            description = "Class size factor.")
+    int sizeFactorClasses;
+
+    @Override
+    public Integer call() throws Exception {
+
+        initialize(verbose, auto_yes);
+
 
         int num_to_generate = Math.max(numClassesPerLargeLoader, numClassesPerSmallLoader);
         System.out.print("Generate " + num_to_generate + " in memory class files...");
@@ -111,6 +111,8 @@ public class BreatheInBreatheOut extends MyTestCaseBase {
             waitForKeyPress("after GC");
 
 		}
-	}
+
+        return 0;
+    }
 
 }

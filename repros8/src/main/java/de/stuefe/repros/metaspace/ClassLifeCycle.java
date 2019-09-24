@@ -1,51 +1,49 @@
 package de.stuefe.repros.metaspace;
 
-import de.stuefe.repros.MiscUtils;
+
+import de.stuefe.repros.TestCaseBase;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.Option;
+import picocli.CommandLine;
 
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
-public class ClassLifeCycle extends MyTestCaseBase {
 
-    public static void main(String args[]) throws Exception {
-        ClassLifeCycle test = new ClassLifeCycle();
-        test.run(args);
+@CommandLine.Command(name = "ClassLifeCycle", mixinStandardHelpOptions = true)
+public class ClassLifeCycle extends TestCaseBase implements Callable<Integer> {
+
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+    int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
+            description = "Verbose.")
+    boolean verbose;
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new ClassLifeCycle()).execute(args);
+        System.exit(exitCode);
     }
 
-    Option options_num_classes =
-            Option.builder()
-                    .longOpt("num-classes-per-loader")
-                    .hasArg().type(Long.class)
-                    .desc("number of classes per loader")
-                    .build();
 
-    Option options_size_classes =
-            Option.builder()
-                    .longOpt("class-size")
-                    .hasArg().type(Long.class)
-                    .desc("avg class size factor")
-                    .build();
+    @CommandLine.Option(names = { "--num-classes-per-loader" }, defaultValue = "100")
+    int numClasses;
+
+    @CommandLine.Option(names = { "--class-size" }, defaultValue = "10",
+            description = "Class size factor.")
+    int sizeFactor;
 
     class LoaderGeneration {
         ArrayList<ClassLoader> loaders = new ArrayList<>();
         ArrayList<Class> loaded_classes = new ArrayList<>();
     }
 
-    ;
 
-    private void run(String[] args) throws Exception {
-
-        Option[] options = new Option[]{
-                options_num_classes,
-                options_size_classes};
-
-        prolog(getClass(), args, options);
-
-        int numClasses = Integer.parseInt(options_num_classes.getValue("100"));
-        int sizeFactor = Integer.parseInt(options_size_classes.getValue("10"));
+    @Override
+    public Integer call() throws Exception {
+        initialize(verbose, auto_yes);
 
         System.out.print("Generating " + numClasses + " in memory class files, size factor "  + sizeFactor + " ...");
         for (int j = 0; j < numClasses; j++) {
@@ -72,6 +70,8 @@ public class ClassLifeCycle extends MyTestCaseBase {
 
         System.gc(); System.gc();
         waitForKeyPress("After gc");
+
+        return 0;
 
     }
 
