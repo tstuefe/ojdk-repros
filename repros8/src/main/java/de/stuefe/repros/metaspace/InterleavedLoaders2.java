@@ -39,7 +39,7 @@ public class InterleavedLoaders2 implements Callable<Integer> {
         for (int j = 0; j < num; j++) {
             String className = nameClass(j);
             Utils.createRandomClass(className, sizeFactor);
-            if (j % (num / 20) == 0) {
+            if (j % 100 == 0) {
                 System.out.print("*");
             }
         }
@@ -67,33 +67,18 @@ public class InterleavedLoaders2 implements Callable<Integer> {
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;
 
-    void waitSome(String message, int secs) {
-        if (message != null) {
-            System.out.println(message);
-        }
-        System.out.print("... waiting " + secs + " secs ...");
-        try {
-            Thread.sleep(secs * 1000);
-        } catch (InterruptedException e) {
-        }
-        System.out.println(" ... continuing.");
-    }
 
-    void waitSome(String message) {
-        waitSome(message, unattendedModeWaitSecs);
-    }
-
-    void waitForKeyPress(String message) {
+    void waitForKeyPress(String message, int secs) {
         if (message != null) {
             System.out.println(message);
         }
         System.out.print("<press key>");
         if (auto_yes) {
             System.out.print (" ... (auto-yes) ");
-            if (unattendedModeWaitSecs > 0) {
-                System.out.print("... waiting " +unattendedModeWaitSecs + " secs ...");
+            if (secs > 0) {
+                System.out.print("... waiting " +secs + " secs ...");
                 try {
-                    Thread.sleep(unattendedModeWaitSecs * 1000);
+                    Thread.sleep(secs * 1000);
                 } catch (InterruptedException e) {
                 }
             }
@@ -107,6 +92,7 @@ public class InterleavedLoaders2 implements Callable<Integer> {
         System.out.println (" ... continuing.");
     }
 
+    void waitForKeyPress(String message) { waitForKeyPress(message, unattendedModeWaitSecs); }
 
     class LoaderGeneration {
         ArrayList<ClassLoader> loaders = new ArrayList<>();
@@ -152,38 +138,38 @@ public class InterleavedLoaders2 implements Callable<Integer> {
         System.gc();
         System.gc();
 
-        waitSome("Will load " + num_clusters +
+        waitForKeyPress("Will load " + num_clusters +
                 " generations of " + num_loaders_per_cluster + " loaders each, "
                 + " each loader loading " + num_classes_per_loader + " classes...", 4);
 
         loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
 
-        waitSome("After loading...");
+        waitForKeyPress("After loading...");
 
         // get rid of all but the last two
-        for (int i = num_clusters - 1; i >= 2; i--) {
-            waitSome("Before freeing generation " + i + "...");
+        for (int i = num_clusters - 1; i >= 1; i--) {
+            waitForKeyPress("Before freeing generation " + i + "...");
             generations[i].loaders.clear();
             generations[i].loaded_classes.clear();
             System.gc();
             System.gc();
-            waitSome("After freeing generation " + i + ".");
+            waitForKeyPress("After freeing generation " + i + ".");
         }
 
-        waitSome(null, 60);
+        waitForKeyPress(null, 60);
 
         loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
 
-        waitSome("After loading.");
+        waitForKeyPress("After loading.");
 
         // Now free all
         for (int i = num_clusters - 1; i >= 0; i--) {
-            waitSome("Before freeing generation " + i + "...");
+            waitForKeyPress("Before freeing generation " + i + "...");
             generations[i].loaders.clear();
             generations[i].loaded_classes.clear();
             System.gc();
             System.gc();
-            waitSome("After freeing generation " + i + ".");
+            waitForKeyPress("After freeing generation " + i + ".");
         }
 
         return 0;
