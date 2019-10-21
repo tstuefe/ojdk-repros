@@ -1,99 +1,121 @@
 package de.stuefe.repros.metaspace;
 
 import de.stuefe.repros.MiscUtils;
+import de.stuefe.repros.TestCaseBase;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
+import picocli.CommandLine;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
-public class ManyLambdas {
+
+@CommandLine.Command(name = "ManyLambdas", mixinStandardHelpOptions = true,
+        description = "ManyLambdas repro.")
+public class ManyLambdas
+        extends TestCaseBase implements Callable<Integer> {
+
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+    int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
+            description = "Verbose.")
+    boolean verbose;
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new ManyLambdas()).execute(args);
+        System.exit(exitCode);
+    }
 
     static String prepareCode(int numLambdas) {
 
         String code =
-                "import java.util.ArrayList;" +
-                "import java.util.List;" +
-                "import java.util.Random;" +
-                "import java.util.function.Predicate;" +
-                "" +
-                "class Person {" +
-                "	public String firstname;" +
-                "	public String lastname;" +
-                "	public int age;" +
-                "	public int yearly_income;" +
-                "	public Person(String firstname, String lastname, int age, int yearly_income) {" +
-                "		super();" +
-                "		this.firstname = firstname;" +
-                "		this.lastname = lastname;" +
-                "		this.age = age;" +
-                "		this.yearly_income = yearly_income;" +
-                "	}" +
-                "" +
-                "	static String[] firstNames = new String[] {" +
+                "import java.util.ArrayList;\n" +
+                "import java.util.List;\n" +
+                "import java.util.Random;\n" +
+                "import java.util.function.Predicate;\n" +
+                "\n" +
+                "class Person {\n" +
+                "	public String firstname;\n" +
+                "	public String lastname;\n" +
+                "	public int age;\n" +
+                "	public int yearly_income;\n" +
+                "	public Person(String firstname, String lastname, int age, int yearly_income) {\n" +
+                "		super();\n" +
+                "		this.firstname = firstname;\n" +
+                "		this.lastname = lastname;\n" +
+                "		this.age = age;\n" +
+                "		this.yearly_income = yearly_income;\n" +
+                "	}\n" +
+                "\n" +
+                "	static String[] firstNames = new String[] {\n" +
                 "		\"Fred\", \"Richard\", \"David\", \"Donald\", \"Nero\", \"Micki Mouse\", \"Luis\", \"Saar\", \"Roswitha\", \"Erna\", \"Nicole\"" +
-                "	};" +
-                "" +
-                "	static String[] lastNames = new String[] {" +
+                "	}\n;" +
+                "\n" +
+                "	static String[] lastNames = new String[] {\n" +
                 "		\"Neiru\", \"Stuefe\", \"Varma\", \"Gödel\", \"Studenbeker\", \"Kant\", \"Heisinger\"" +
-                "	};" +
-                "" +
-                "	static Random rand = new Random();" +
-                "" +
-                "	static Person createRandomPerson() {" +
-                "		return new Person(" +
-                "				firstNames[rand.nextInt(firstNames.length)]," +
-                "				lastNames[rand.nextInt(lastNames.length)]," +
-                "				rand.nextInt(99)," +
-                "				rand.nextInt(200000)" +
-                "		);" +
-                "	}" +
-                "}" +
-                "" +
-                "public class ManyManyLambdas {" +
-                "" +
-                "	static List<Person> list = new ArrayList<>();" +
-                "" +
-                "	static void init() {" +
-                "		for (int i = 0; i < 1000; i ++) {" +
-                "			list.add(Person.createRandomPerson());" +
-                "		}" +
-                "	}" +
-                "" +
-                "	static void printPersonWithPredicate(List<Person> list, Predicate<Person> p) {" +
-                "		for (Person person: list) {" +
-                "			if (p.test(person)) {" +
-                "				System.out.println(person.firstname + \" \" + person.lastname + \", \" + person.age + \" years, \" + person.yearly_income + \" income\");" +
-                "			}" +
-                "		}" +
-                "	}" +
-                "" +
-                "	public static void do() throws Exception {" +
-                "		init();" +
-                "" +
-                "		System.out.println(\"All:\");" +
-                "		printPersonWithPredicate(list, person -> true);" +
-                "		System.out.println(\"\");" +
-                "" +
-                "		System.out.println(\"Childs:\");" +
-                "		printPersonWithPredicate(list, person -> person.age < 18);" +
-                "		System.out.println(\"\");" +
-                "" +
-                "		System.out.println(\"Rich:\");" +
-                "		printPersonWithPredicate(list, person -> person.yearly_income > 100000);" +
-                "		System.out.println(\"\");" +
-                "" +
-                "        XXX" +
-                "	}" +
-                "" +
-                "" +
-                "}" +
+                "	};\n" +
+                "\n" +
+                "	static Random rand = new Random();\n" +
+                "\n" +
+                "	static Person createRandomPerson() {\n" +
+                "		return new Person(\n" +
+                "				firstNames[rand.nextInt(firstNames.length)],\n" +
+                "				lastNames[rand.nextInt(lastNames.length)],\n" +
+                "				rand.nextInt(99),\n" +
+                "				rand.nextInt(200000)\n" +
+                "		);\n" +
+                "	}\n" +
+                "}\n" +
+                "\n" +
+                "public class ManyManyLambdas {\n" +
+                "\n" +
+                "	static List<Person> list = new ArrayList<>();\n" +
+                "\n" +
+                "	static void init() {\n" +
+                "		for (int i = 0; i < 1000; i ++) {\n" +
+                "			list.add(Person.createRandomPerson());\n" +
+                "		}\n" +
+                "	}\n" +
+                "\n" +
+                "	static int countPersonWithPredicate(List<Person> list, Predicate<Person> p) {\n" +
+                "       int cnt = 0; \n " +
+                "		for (Person person: list) {\n" +
+                "			if (p.test(person)) {\n" +
+                "				cnt++;\n" +
+          //      "				System.out.println(person.firstname + \" \" + person.lastname + \", \" + person.age + \" years, \" + person.yearly_income + \" income\");" +
+                "			}\n" +
+                "		}\n" +
+                "       return cnt; \n" +
+                "	}\n" +
+                "\n" +
+                "	public static void doit() throws Exception {\n" +
+                "		init();\n" +
+                "\n" +
+                "		System.out.println(\"All:\");\n" +
+                "		int n = countPersonWithPredicate(list, person -> true);\n" +
+                "\n" +
+                "		System.out.println(\"Childs:\");\n" +
+                "		n += countPersonWithPredicate(list, person -> person.age < 18);\n" +
+                "\n" +
+                "		System.out.println(\"Rich:\");\n" +
+                "		n += countPersonWithPredicate(list, person -> person.yearly_income > 100000);\n" +
+                "\n" +
+                "        XXX\n" +
+                "       System.out.println(\"\" + n); \n" +
+                "	}\n" +
+                "\n" +
+                "\n" +
+                "}\n" +
                 "";
 
         StringBuilder bld = new StringBuilder();
         for (int i = 0; i < numLambdas; i ++) {
-            bld.append("printPersonWithPredicate(list, person -> person.age < " + i + ");");
+            bld.append("n += countPersonWithPredicate(list, person -> person.age < " + i + ");\n");
         }
 
         code = code.replace("XXX", bld.toString());
@@ -105,9 +127,14 @@ public class ManyLambdas {
     }
 
 
-    public static void main(String[] args) {
+    @CommandLine.Option(names = { "--num-lambdas" }, defaultValue = "1000",
+            description = "Number of lambdas.")
+    int num_lambdas;
 
-        String code = prepareCode(100);
+    @Override
+    public Integer call() throws Exception {
+
+        String code = prepareCode(num_lambdas);
         Utils.createClassFromSource("ManyManyLambdas", code);
 
         MiscUtils.waitForKeyPress("Before loading...");
@@ -121,7 +148,7 @@ public class ManyLambdas {
 
             Class<?> clazz = Class.forName("ManyManyLambdas", true, loader);
 
-            Method m = clazz.getMethod("do");
+            Method m = clazz.getMethod("doit");
             m.invoke(null);
 
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -131,6 +158,7 @@ public class ManyLambdas {
 
         MiscUtils.waitForKeyPress();
 
+        return 0;
 
     }
 
