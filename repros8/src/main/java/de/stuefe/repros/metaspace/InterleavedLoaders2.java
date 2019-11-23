@@ -65,6 +65,11 @@ public class InterleavedLoaders2 implements Callable<Integer> {
     @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
+
     int unattendedModeWaitSecs = 4;
 
 
@@ -75,7 +80,7 @@ public class InterleavedLoaders2 implements Callable<Integer> {
         System.out.print("<press key>");
         if (auto_yes) {
             System.out.print (" ... (auto-yes) ");
-            if (secs > 0) {
+            if (secs > 0 && nowait == false) {
                 System.out.print("... waiting " +secs + " secs ...");
                 try {
                     Thread.sleep(secs * 1000);

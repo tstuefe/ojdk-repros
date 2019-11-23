@@ -45,10 +45,14 @@ class Person {
 @CommandLine.Command(name = "SimpleLambda2", mixinStandardHelpOptions = true)
 public class SimpleLambda2 extends TestCaseBase implements Callable<Integer> {
 
-	@CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+	@CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
 			description = "Autoyes.")
 	boolean auto_yes;
 	int unattendedModeWaitSecs = 4;
+
+	@CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+			description = "do not wait (only with autoyes).")
+	boolean nowait;
 
 	@CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
 			description = "Verbose.")
@@ -89,7 +93,7 @@ public class SimpleLambda2 extends TestCaseBase implements Callable<Integer> {
 	@Override
 	public Integer call() throws Exception {
 
-		initialize(verbose, auto_yes);
+		initialize(verbose, auto_yes, nowait);
 
 		for (int run = 0; run < repeat_count; run ++) {
 			init();

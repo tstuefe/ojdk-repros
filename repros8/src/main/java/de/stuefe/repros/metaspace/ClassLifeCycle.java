@@ -13,10 +13,14 @@ import java.util.concurrent.Callable;
 @CommandLine.Command(name = "ClassLifeCycle", mixinStandardHelpOptions = true)
 public class ClassLifeCycle extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
 
     @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
             description = "Verbose.")
@@ -43,7 +47,7 @@ public class ClassLifeCycle extends TestCaseBase implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        initialize(verbose, auto_yes);
+        initialize(verbose, auto_yes, nowait);
 
         System.out.print("Generating " + numClasses + " in memory class files, size factor "  + sizeFactor + " ...");
         for (int j = 0; j < numClasses; j++) {

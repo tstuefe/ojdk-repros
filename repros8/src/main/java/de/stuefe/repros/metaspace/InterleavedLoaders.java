@@ -66,7 +66,7 @@ public class InterleavedLoaders implements Callable<Integer> {
             description = "Repeat.")
     int num_repeat;
 
-    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;

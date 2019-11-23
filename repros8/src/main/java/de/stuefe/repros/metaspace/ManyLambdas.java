@@ -1,12 +1,12 @@
 package de.stuefe.repros.metaspace;
 
-import de.stuefe.repros.MiscUtils;
+
 import de.stuefe.repros.TestCaseBase;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
 import picocli.CommandLine;
 
-import java.lang.reflect.InvocationTargetException;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -17,10 +17,14 @@ import java.util.concurrent.Callable;
 public class ManyLambdas
         extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
 
     @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
             description = "Verbose.")
@@ -31,7 +35,7 @@ public class ManyLambdas
         System.exit(exitCode);
     }
 
-    static String prepareCode(int numLambdas) {
+    static String codeForClassWithManyLambdas(String classname, int numLambdas) {
 
         String code =
                 "import java.util.ArrayList;\n" +
@@ -39,7 +43,9 @@ public class ManyLambdas
                 "import java.util.Random;\n" +
                 "import java.util.function.Predicate;\n" +
                 "\n" +
-                "class Person {\n" +
+                "public class " + classname + "{\n" +
+                "\n" +
+                "static class Person {\n" +
                 "	public String firstname;\n" +
                 "	public String lastname;\n" +
                 "	public int age;\n" +
@@ -72,8 +78,6 @@ public class ManyLambdas
                 "	}\n" +
                 "}\n" +
                 "\n" +
-                "public class ManyManyLambdas {\n" +
-                "\n" +
                 "	static List<Person> list = new ArrayList<>();\n" +
                 "\n" +
                 "	static void init() {\n" +
@@ -93,29 +97,24 @@ public class ManyLambdas
                 "       return cnt; \n" +
                 "	}\n" +
                 "\n" +
-                "	public static void doit() throws Exception {\n" +
+                "	public static int doit() throws Exception {\n" +
                 "		init();\n" +
                 "\n" +
-                "		System.out.println(\"All:\");\n" +
-                "		int n = countPersonWithPredicate(list, person -> true);\n" +
-                "\n" +
-                "		System.out.println(\"Childs:\");\n" +
-                "		n += countPersonWithPredicate(list, person -> person.age < 18);\n" +
-                "\n" +
-                "		System.out.println(\"Rich:\");\n" +
-                "		n += countPersonWithPredicate(list, person -> person.yearly_income > 100000);\n" +
-                "\n" +
-                "        XXX\n" +
-                "       System.out.println(\"\" + n); \n" +
+                "		int n = 0;\n" +
+                "       XXX\n" +
+                "       return n;\n" +
                 "	}\n" +
-                "\n" +
                 "\n" +
                 "}\n" +
                 "";
 
         StringBuilder bld = new StringBuilder();
         for (int i = 0; i < numLambdas; i ++) {
-            bld.append("n += countPersonWithPredicate(list, person -> person.age < " + i + ");\n");
+            switch (i % 3) {
+                case 0: bld.append("n += countPersonWithPredicate(list, person -> true);\n"); break;
+                case 1: bld.append("n += countPersonWithPredicate(list, person -> person.age < " + i + ");\n"); break;
+                case 2: bld.append("n += countPersonWithPredicate(list, person -> person.yearly_income > " + i * 1000 + ");\n"); break;
+            }
         }
 
         code = code.replace("XXX", bld.toString());
@@ -127,36 +126,43 @@ public class ManyLambdas
     }
 
 
-    @CommandLine.Option(names = { "--num-lambdas" }, defaultValue = "1000",
+    @CommandLine.Option(names = { "--num-lambdas" }, defaultValue = "2300",
             description = "Number of lambdas.")
     int num_lambdas;
 
     @Override
     public Integer call() throws Exception {
 
-        String code = prepareCode(num_lambdas);
-        Utils.createClassFromSource("ManyManyLambdas", code);
+        initialize(verbose, auto_yes, nowait);
 
-        MiscUtils.waitForKeyPress("Before loading...");
+        waitForKeyPress("Before loading...");
 
-        System.gc();
-        MiscUtils.waitForKeyPress();
-
+        int max_lambdas_per_class = 1000;
+        ArrayList<Class> classes = new ArrayList<>();
         InMemoryClassLoader loader = new InMemoryClassLoader("ManyLambdasClassloader", null);
 
-        try {
-
-            Class<?> clazz = Class.forName("ManyManyLambdas", true, loader);
-
-            Method m = clazz.getMethod("doit");
-            m.invoke(null);
-
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+        for (int n = num_lambdas; n > 0; n -= max_lambdas_per_class) {
+            System.out.print("*");
+            String className = "ManyManyLambdas" + n;
+            int lambdas = n > max_lambdas_per_class ? max_lambdas_per_class : n;
+            String code = codeForClassWithManyLambdas(className, lambdas);
+            Utils.createClassFromSource(className, code);
+            classes.add(Class.forName(className, true, loader));
         }
 
+        System.out.println();
+        System.gc();
+        waitForKeyPress("Before invoking...");
 
-        MiscUtils.waitForKeyPress();
+        int n = 0;
+        for (Class c : classes) {
+            System.out.print("*");
+            Method m = c.getMethod("doit");
+            n += ((Integer)m.invoke(null)).intValue();
+        }
+
+        System.out.println();
+        waitForKeyPress("After invoking...");
 
         return 0;
 

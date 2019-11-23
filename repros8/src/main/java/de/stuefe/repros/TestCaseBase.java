@@ -5,11 +5,13 @@ import java.io.IOException;
 public class TestCaseBase {
 
     private boolean is_verbose_mode;
-    private boolean is_unattended_mode;
+    private boolean autoyes;
+    private boolean nowait;
 
-    protected void initialize(boolean is_verbose_mode, boolean is_unattended_mode) {
+    protected void initialize(boolean is_verbose_mode, boolean autoyes, boolean nowait) {
         this.is_verbose_mode = is_verbose_mode;
-        this.is_unattended_mode = is_unattended_mode;
+        this.autoyes = autoyes;
+        this.nowait = nowait;
     }
 
     /***
@@ -42,9 +44,9 @@ public class TestCaseBase {
             System.out.println(message);
         }
         System.out.print("<press key>");
-        if (is_unattended_mode) {
+        if (autoyes) {
             System.out.print (" ... (autopress) ");
-            if (unattendedModeWaitSecs > 0) {
+            if (nowait == false && unattendedModeWaitSecs > 0) {
                 System.out.print("... waiting " +unattendedModeWaitSecs + " secs ...");
                 try {
                     Thread.sleep(unattendedModeWaitSecs * 1000);

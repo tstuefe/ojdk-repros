@@ -14,10 +14,14 @@ import java.util.concurrent.Callable;
         description = "BreatheInBreatheOut repro.")
 public class BreatheInBreatheOut extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
 
     @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
             description = "Verbose.")
@@ -65,7 +69,7 @@ public class BreatheInBreatheOut extends TestCaseBase implements Callable<Intege
     @Override
     public Integer call() throws Exception {
 
-        initialize(verbose, auto_yes);
+        initialize(verbose, auto_yes, nowait);
 
 
         int num_to_generate = Math.max(numClassesPerLargeLoader, numClassesPerSmallLoader);
