@@ -1,7 +1,18 @@
 package de.stuefe.repros.metaspace.internals;
+
+import java.util.Random;
+
 public class Utils {
 
+	static Random rand = new Random();
+
+	static final float defaultWiggle = 0.0f;
+
 	static public void createRandomClass(String classname, int sizeFactor) {
+		createRandomClass(classname, sizeFactor, defaultWiggle);
+	}
+
+	static public void createRandomClass(String classname, int sizeFactor, float wiggle) {
 		String code = Utils.makeRandomSource(sizeFactor).replaceAll("CLASSNAME", classname);
 		boolean success = InMemoryJavaFileManager.theFileManager().compileSingleFile(classname, code);
 		assert(success);
@@ -13,10 +24,22 @@ public class Utils {
 	}
 
 	static public String makeRandomSource(int size) {
+		return makeRandomSource(size, defaultWiggle);
+	}
+
+	static public String makeRandomSource(int size, float wiggle) {
 	
 		StringBuilder bld = new StringBuilder();
 		bld.append("public class CLASSNAME {\n");
-		for (int i = 0; i < size; i ++) {
+		int spread = (int)(size * wiggle);
+		int size_with_wiggle = 0;
+		if (spread > 0) {
+			int offset = rand.nextInt(spread);
+			size_with_wiggle = Math.min(size + (offset - spread / 2), 1);
+		} else {
+			size_with_wiggle = size;
+		}
+		for (int i = 0; i < size_with_wiggle; i ++) {
 			bld.append("public int i" + i + " = " + i * 3 + ";\n");
 			bld.append("public String s" + i + " = \"hallo" + i + "\";\n");
 			bld.append("public byte[] b" + i + " = new byte[] {");
