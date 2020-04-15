@@ -35,22 +35,22 @@ public class InterleavedLoaders implements Callable<Integer> {
         return "myclass_" + number;
     }
 
-    private static void generateClasses(int num, int sizeFactor) {
+    private static void generateClasses(int num, int sizeFactor, float wiggle) {
         for (int j = 0; j < num; j++) {
             String className = nameClass(j);
-            Utils.createRandomClass(className, sizeFactor);
-            if (j % (num / 20) == 0) {
+            Utils.createRandomClass(className, sizeFactor, wiggle);
+            if (j % 100 == 0) {
                 System.out.print("*");
             }
         }
         System.out.println(".");
     }
 
-    @CommandLine.Option(names = { "--num-clusters" }, defaultValue = "4",
+    @CommandLine.Option(names = { "--num-clusters" }, defaultValue = "5",
             description = "Number of loader clusters.")
     int num_clusters;
 
-    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "100",
+    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "80",
             description = "Number of loaders per cluster.")
     int num_loaders_per_cluster;
 
@@ -62,26 +62,32 @@ public class InterleavedLoaders implements Callable<Integer> {
             description = "Class size factor.")
     int class_size_factor;
 
-    @CommandLine.Option(names = { "--repeat", "-n" }, defaultValue = "1",
-            description = "Repeat.")
-    int num_repeat;
-
-    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
+
+    @CommandLine.Option(names = { "--wiggle" }, defaultValue = "0.0",
+            description = "Wiggle factor (0.0 .. 1.0f, default 0,0f).")
+    float wiggle = 0;
+
     int unattendedModeWaitSecs = 4;
 
-    void waitForKeyPress(String message) {
+
+    void waitForKeyPress(String message, int secs) {
         if (message != null) {
             System.out.println(message);
         }
         System.out.print("<press key>");
         if (auto_yes) {
             System.out.print (" ... (auto-yes) ");
-            if (unattendedModeWaitSecs > 0) {
-                System.out.print("... waiting " +unattendedModeWaitSecs + " secs ...");
+            if (secs > 0 && nowait == false) {
+                System.out.print("... waiting " +secs + " secs ...");
                 try {
-                    Thread.sleep(unattendedModeWaitSecs * 1000);
+                    Thread.sleep(secs * 1000);
                 } catch (InterruptedException e) {
                 }
             }
@@ -95,6 +101,7 @@ public class InterleavedLoaders implements Callable<Integer> {
         System.out.println (" ... continuing.");
     }
 
+    void waitForKeyPress(String message) { waitForKeyPress(message, unattendedModeWaitSecs); }
 
     class LoaderGeneration {
         ArrayList<ClassLoader> loaders = new ArrayList<>();
@@ -126,13 +133,13 @@ public class InterleavedLoaders implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        System.out.println("Loader clusters: " + num_clusters + ".");
-        System.out.println("Loaders per cluster: " + num_loaders_per_cluster + ".");
+        System.out.println("Loader gens: " + num_clusters + ".");
+        System.out.println("Loaders per gen: " + num_loaders_per_cluster + ".");
         System.out.println("Classes per loader: " + num_classes_per_loader + ".");
-        System.out.println("Class size factor: " + class_size_factor + ".");
-        System.out.println("Repeat count: " + num_repeat + ".");
+        System.out.println("Class size: " + class_size_factor + ".");
+        System.out.println("Wiggle factor: " + wiggle + ".");
 
-        generateClasses(num_classes_per_loader, class_size_factor);
+        generateClasses(num_classes_per_loader, class_size_factor, wiggle);
 
         LoaderGeneration[] generations = new LoaderGeneration[num_clusters];
         for (int i = 0; i < num_clusters; i++) {
@@ -141,32 +148,47 @@ public class InterleavedLoaders implements Callable<Integer> {
         System.gc();
         System.gc();
 
+        long start = System.currentTimeMillis();
+
         waitForKeyPress("Will load " + num_clusters +
                 " generations of " + num_loaders_per_cluster + " loaders each, "
-                + " each loader loading " + num_classes_per_loader + " classes...");
+                + " each loader loading " + num_classes_per_loader + " classes...", 4);
 
-        for (int nrun = 0; nrun < num_repeat; nrun++) {
+        // First spike
+        loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
 
-            loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
+        waitForKeyPress("After loading...");
 
-            waitForKeyPress("After loading...");
-
-            // Now: free all generations, one after the other.
-            // This should give us a "breathe-out" effect which should demonstrate how much memory is retained by
-            // the VM after letting go of one loader generation, in the face of fragmentation.
-
-            for (int i = 0; i < num_clusters; i++) {
-                waitForKeyPress("Before freeing generation " + i + "...");
-                generations[i].loaders.clear();
-                generations[i].loaded_classes.clear();
-                System.gc();
-                System.gc();
-                waitForKeyPress("After freeing generation " + i + ".");
-            }
-
+        // get rid of all but the last two
+        for (int i = num_clusters - 1; i >= 1; i--) {
+            waitForKeyPress("Before freeing generation " + i + "...");
+            generations[i].loaders.clear();
+            generations[i].loaded_classes.clear();
+            System.gc();
+            System.gc();
+            waitForKeyPress("After freeing generation " + i + ".");
         }
 
-        waitForKeyPress("Done");
+        waitForKeyPress(null, 60);
+
+        // Second spike
+        loadInterleavedLoaders(generations, num_clusters, num_loaders_per_cluster, num_classes_per_loader);
+
+        waitForKeyPress("After loading.");
+
+        // Now free all
+        for (int i = num_clusters - 1; i >= 0; i--) {
+            waitForKeyPress("Before freeing generation " + i + "...");
+            generations[i].loaders.clear();
+            generations[i].loaded_classes.clear();
+            System.gc();
+            System.gc();
+            waitForKeyPress("After freeing generation " + i + ".");
+        }
+
+        long finish = System.currentTimeMillis();
+        long timeElapsed = finish - start;
+        System.out.println("Elapsed Time: " + timeElapsed + " ms");
 
         return 0;
     }

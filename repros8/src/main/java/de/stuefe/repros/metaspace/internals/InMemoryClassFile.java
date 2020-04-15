@@ -6,14 +6,12 @@ import java.io.OutputStream;
 
 import javax.tools.SimpleJavaFileObject;
 
-import static de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager.*;
-
 public class InMemoryClassFile extends SimpleJavaFileObject {
 	private String name;
 	private ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 	
 	InMemoryClassFile(String className) {
-		super(makeURIforClass(className, Kind.CLASS), Kind.CLASS);
+		super(InMemoryJavaFileManager.makeURIforClass(className, Kind.CLASS), Kind.CLASS);
 		name = className;
 	}
 

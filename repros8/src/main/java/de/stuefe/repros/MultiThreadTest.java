@@ -1,8 +1,6 @@
 package de.stuefe.repros;
 
-import de.stuefe.repros.util.MyTestCaseBase;
-
-public class MultiThreadTest extends MyTestCaseBase {
+public class MultiThreadTest {
     static int secs = 0;
     static int num_threads = 0;
 
@@ -45,7 +43,7 @@ public class MultiThreadTest extends MyTestCaseBase {
             sleepers[i].start();
         }
 
-        waitForKeyPress();
+        MiscUtils.waitForKeyPress();
 
         for (int i = 0; i < num_threads; i ++) {
             try {

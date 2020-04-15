@@ -37,10 +37,10 @@ public class ParallelLoaders implements Callable<Integer> {
         return "myclass_" + number;
     }
 
-    private static void generateClasses(int num, int sizeFactor) {
+    private static void generateClasses(int num, int sizeFactor, float wiggle) {
         for (int j = 0; j < num; j++) {
             String className = nameClass(j);
-            Utils.createRandomClass(className, sizeFactor);
+            Utils.createRandomClass(className, sizeFactor, wiggle);
             if (j % 100 == 0) {
                 System.out.print("*");
             }
@@ -67,6 +67,15 @@ public class ParallelLoaders implements Callable<Integer> {
     @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
     boolean auto_yes;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
+
+    @CommandLine.Option(names = { "--wiggle" }, defaultValue = "0.0",
+            description = "Wiggle factor (0.0 .. 1.0f, default 0,0f).")
+    float wiggle = 0;
+
     int unattendedModeWaitSecs = 4;
 
 
@@ -77,7 +86,7 @@ public class ParallelLoaders implements Callable<Integer> {
         System.out.print("<press key>");
         if (auto_yes) {
             System.out.print (" ... (auto-yes) ");
-            if (secs > 0) {
+            if (secs > 0 && nowait == false) {
                 System.out.print("... waiting " +secs + " secs ...");
                 try {
                     Thread.sleep(secs * 1000);
@@ -174,6 +183,7 @@ public class ParallelLoaders implements Callable<Integer> {
             }
         }
         System.gc();
+        System.gc();
 
         waitForKeyPress("After loading.");
 
@@ -186,9 +196,10 @@ public class ParallelLoaders implements Callable<Integer> {
         System.out.println("Loader clusters: " + num_clusters + ".");
         System.out.println("Loaders per cluster: " + num_loaders_per_cluster + ".");
         System.out.println("Classes per loader: " + num_classes_per_loader + ".");
-        System.out.println("Class size factor: " + class_size_factor + ".");
+        System.out.println("Class size: " + class_size_factor + ".");
+        System.out.println("Wiggle factor: " + wiggle + ".");
 
-        generateClasses(num_classes_per_loader, class_size_factor);
+        generateClasses(num_classes_per_loader, class_size_factor, wiggle);
 
         LoaderGeneration[] generations = new LoaderGeneration[num_clusters];
         for (int i = 0; i < num_clusters; i++) {

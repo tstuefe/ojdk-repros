@@ -3,15 +3,30 @@ package de.stuefe.repros.metaspace;
 import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.*;
+import picocli.CommandLine;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
-public class MultiThreadStress extends MyTestCaseBase {
+@CommandLine.Command(name = "MultiThreadedStress", mixinStandardHelpOptions = true,
+        description = "MultiThreadedStress repro.")
+public class MultiThreadedStress implements Callable<Integer> {
 
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new MultiThreadedStress()).execute(args);
+        System.exit(exitCode);
+    }
+
+
+    @CommandLine.Option(names = { "--profile", "-p" }, defaultValue = "M",
+            description = "Test profile (XS, S, M, L, XL, XXL).")
+    String profile_name;
+
+    @CommandLine.Option(names = { "--time", "-t" }, defaultValue = "30",
+            description = "Time this test should take, in seconds.")
+    int time;
 
     static Random rand = new Random();
 
@@ -222,7 +237,6 @@ public class MultiThreadStress extends MyTestCaseBase {
                     Thread.sleep(_interval);
                     if (_gcNeeded) {
                         System.gc();
-                        System.gc();
                         _gcCounter++;
 
                     }
@@ -262,47 +276,29 @@ public class MultiThreadStress extends MyTestCaseBase {
             this.sizeSpec = sizeSpec;
         }
 
-        static String validKeys() {
-            String s = "";
+        static TestProfile getForString(String name) {
             for (TestProfile p : TestProfile.values()) {
-                s += p.toString();
-                s += " ";
+                if (name.equalsIgnoreCase(p.toString())) {
+                    return p;
+                }
             }
-            return s;
+            return null;
         }
 
     }
 
-    private void run(String[] args) throws Exception {
+    @Override
+    public Integer call() throws Exception {
 
-        Option[] myOptions = new Option[]{
-                Option.builder("p").longOpt("profile")
-                        .hasArg().desc("test profile (one of " + TestProfile.validKeys() + ").")
-                        .build(),
-                Option.builder()
-                        .longOpt("time")
-                        .hasArg()
-                        .desc("time this test should take, in seconds.")
-                        .build()
-        };
+        System.out.println("Profile: " + profile_name + ".");
+        System.out.println("Time: " + time + "s.");
 
-        super.prolog(MultiThreadStress.class, args, myOptions);
-
-        TestProfile profile = TestProfile.M;
-
-        if (cmdline.hasOption('p')) {
-            profile = TestProfile.valueOf(cmdline.getOptionValue('p'));
-        }
-
-        System.out.println("Test profile: " + profile.name());
-
-        int time = -1;
-        if (cmdline.hasOption("time")) {
-            time = Integer.parseInt(cmdline.getOptionValue("time"));
+        TestProfile profile = TestProfile.getForString(profile_name);
+        if (profile == null) {
+            throw new Exception("Invalid Profile name " + profile_name);
         }
 
         System.out.println("Time: " + time);
-
 
         prepareClasses(profile.maxClassesPerLoader, profile.sizeSpec);
 
@@ -344,18 +340,16 @@ public class MultiThreadStress extends MyTestCaseBase {
             }
         }
 
+        System.out.println("Num explicit gcs: " + gcThread._gcCounter);
+
         MiscUtils.waitForKeyPress("before final gc");
         System.gc();
         System.gc();
         MiscUtils.waitForKeyPress("after final gc");
 
+        return 0;
     }
 
-
-    public static void main(String[] args) throws Exception {
-        MultiThreadStress test = new MultiThreadStress();
-        test.run(args);
-    }
 
 
 }

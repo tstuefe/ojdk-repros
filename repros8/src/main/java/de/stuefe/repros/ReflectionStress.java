@@ -4,8 +4,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 
-import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager;
+import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
 import picocli.CommandLine;
 

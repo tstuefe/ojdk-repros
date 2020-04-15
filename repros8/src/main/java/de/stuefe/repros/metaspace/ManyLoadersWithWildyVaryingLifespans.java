@@ -1,53 +1,56 @@
 package de.stuefe.repros.metaspace;
 
+import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.Option;
+import picocli.CommandLine;
+
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
-public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
+@CommandLine.Command(name = "ManyLoadersWithWildyVaryingLifespans", mixinStandardHelpOptions = true,
+        description = "ManyLoadersWithWildyVaryingLifespans repro.")
+public class ManyLoadersWithWildyVaryingLifespans implements Callable<Integer> {
 
-
-    public static void main(String args[]) throws Exception {
-        ManyLoadersWithWildyVaryingLifespans test = new ManyLoadersWithWildyVaryingLifespans();
-        test.run(args);
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new ManyLoadersWithWildyVaryingLifespans()).execute(args);
+        System.exit(exitCode);
     }
 
     private static String nameClass(int number) {
         return "myclass_" + number;
     }
 
-    private static void generateClasses(int num, int sizeFactor) {
+    private static void generateClasses(int num, int sizeFactor, float wiggle) {
         for (int j = 0; j < num; j++) {
             String className = nameClass(j);
-            Utils.createRandomClass(className, sizeFactor);
+            Utils.createRandomClass(className, sizeFactor, wiggle);
+            if (j % 100 == 0) {
+                System.out.print("*");
+            }
         }
+        System.out.println(".");
     }
 
-    Option options_num_loaders =
-            Option.builder()
-                    .longOpt("num-loaders")
-                    .hasArg().type(Long.class)
-                    .desc("number of loaders")
-                    .build();
 
-    Option options_num_classes_per_loader =
-            Option.builder()
-                    .longOpt("num-classes-per-loader")
-                    .hasArg().type(Long.class)
-                    .desc("number of classes per loader")
-                    .build();
+    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "300",
+            description = "Number of loaders.")
+    int num_loaders;
 
-    Option options_size_classes =
-            Option.builder()
-                    .longOpt("class-size")
-                    .hasArg().type(Long.class)
-                    .desc("avg class size factor")
-                    .build();
+    @CommandLine.Option(names = { "--num-classes" }, defaultValue = "100",
+            description = "Number of classes per loader.")
+    int num_classes_per_loader;
+
+    @CommandLine.Option(names = { "--class-size" }, defaultValue = "10",
+            description = "Class size factor.")
+    int class_size_factor;
+
+    @CommandLine.Option(names = { "--wiggle" }, defaultValue = "0.0",
+            description = "Wiggle factor (0.0 .. 1.0f, default 0,0f).")
+    float wiggle = 0;
 
     class LoaderGeneration {
         ArrayList<ClassLoader> loaders = new ArrayList<>();
@@ -72,39 +75,29 @@ public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
 
     }
 
-    private void run(String[] args) throws Exception {
+    @Override
+    public Integer call() throws Exception {
 
-        Option[] options = new Option[]{
-                options_num_loaders,
-                options_num_classes_per_loader,
-                options_size_classes};
 
-        prolog(getClass(), args, options);
+        System.out.println("Loaders: " + num_loaders + ".");
+        System.out.println("Classes per loader: " + num_classes_per_loader + ".");
+        System.out.println("Class size: " + class_size_factor + ".");
+        System.out.println("Wiggle factor: " + wiggle + ".");
 
-        int numLoaders = Integer.parseInt(options_num_loaders.getValue("300"));
-        int classesPerLoader =
-                Integer.parseInt(options_num_classes_per_loader.getValue("100"));
-        int sizeFactor =
-                Integer.parseInt(options_size_classes.getValue("10"));
+        generateClasses(num_classes_per_loader, class_size_factor, wiggle);
 
         Random rand = new Random();
 
-        int numClasses = numLoaders * 10;
+        LoaderHolder _loaders[] = new LoaderHolder[num_loaders];
 
-        System.out.print("Generating " + numClasses + " in memory class files, size factor "  + sizeFactor + " ...");
-        generateClasses(classesPerLoader, sizeFactor);
-        System.out.print("Done.");
-
-        LoaderHolder _loaders[] = new LoaderHolder[numLoaders];
-
-        System.out.print("Creating " + numLoaders + " loaders ...");
+        System.out.print("Creating " + num_loaders + " loaders ...");
 
         // Create loaders
-        for (int ldrIdx = 0; ldrIdx < numLoaders; ldrIdx ++) {
+        for (int ldrIdx = 0; ldrIdx < num_loaders; ldrIdx ++) {
             InMemoryClassLoader loader = new InMemoryClassLoader("myloader" + ldrIdx, null);
             // How many ticks this loader lives. I want in average one loader to die per tick.
-            int lifeSpan = rand.nextInt(numLoaders);
-            for (int n = 0; n < classesPerLoader; n ++) {
+            int lifeSpan = rand.nextInt(num_loaders);
+            for (int n = 0; n < num_classes_per_loader; n ++) {
                 String className = nameClass(n);
                 Class<?> clazz = Class.forName(className, true, loader);
             }
@@ -116,9 +109,10 @@ public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
 
         // Clean up class generation remnants.
         System.gc();
-        waitForKeyPress();
+        System.gc();
+        MiscUtils.waitForKeyPress();
 
-        int numLoadersAlive = numLoaders;
+        int numLoadersAlive = num_loaders;
 
         // Slowly release loaders. Every once in a while we stop, gc and then
         // look at Metaspace development.
@@ -127,7 +121,7 @@ public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
         while (numLoadersAlive > 0) {
 
             int numUnloaded = 0;
-            for (int ldrIdx = 0; ldrIdx < numLoaders; ldrIdx ++) {
+            for (int ldrIdx = 0; ldrIdx < num_loaders; ldrIdx ++) {
                 if (_loaders[ldrIdx] != null && _loaders[ldrIdx].tick()) {
                     _loaders[ldrIdx] = null;
                     numUnloaded ++;
@@ -144,16 +138,17 @@ public class ManyLoadersWithWildyVaryingLifespans extends MyTestCaseBase {
                 String jcmdBinary = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator + "jcmd";
                 de.stuefe.repros.process.Utils.executeCommand(jcmdBinary, "" + de.stuefe.repros.process.Utils.getPid(), "VM.metaspace", "basic", "scale=k");
 
-                waitForKeyPress();
+                MiscUtils.waitForKeyPress();
                 nextStopAt -= stopInterval;
             }
 
         }
 
-        waitForKeyPress();
+        MiscUtils.waitForKeyPress();
 
         System.out.println("Done");
 
+        return 0;
     }
 
 

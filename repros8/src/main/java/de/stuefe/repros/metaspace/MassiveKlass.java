@@ -3,41 +3,33 @@ package de.stuefe.repros.metaspace;
 import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
 import de.stuefe.repros.metaspace.internals.Utils;
-import de.stuefe.repros.util.MyTestCaseBase;
-import org.apache.commons.cli.Option;
+import picocli.CommandLine;
 
-public class MassiveKlass extends MyTestCaseBase {
+import java.util.concurrent.Callable;
 
-    private void run(String[] args) throws Exception {
+@CommandLine.Command(name = "MassiveKlass", mixinStandardHelpOptions = true,
+        description = "MassiveKlass repro.")
+public class MassiveKlass  implements Callable<Integer> {
 
-        Option[] options = new Option[] {
-            Option.builder()
-                    .longOpt("num-imethods")
-                    .hasArg().type(Long.class)
-                    .desc("number of interface methods")
-                    .build(),
-                Option.builder()
-                        .longOpt("num-methods")
-                        .hasArg().type(Long.class)
-                        .desc("number of methods")
-                        .build(),
-                Option.builder()
-                        .longOpt("num-members")
-                        .hasArg().type(Long.class)
-                        .desc("number of int member vars")
-                        .build()
-        };
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new MassiveKlass()).execute(args);
+        System.exit(exitCode);
+    }
 
+    @CommandLine.Option(names = { "--num-imethods" }, defaultValue = "1000",
+            description = "Number of imethods.")
+    int num_imethods;
 
-        prolog(getClass(), args, options);
+    @CommandLine.Option(names = { "--num-methods" }, defaultValue = "1000",
+            description = "Number of methods.")
+    int num_methods;
 
-        int size = 10;
-        long num_imethods =
-                Long.parseLong(cmdline.getOptionValue("num-imethods", "1000"));
-        long num_methods =
-                Long.parseLong(cmdline.getOptionValue("num-methods", "1000"));
-        long num_members =
-                Long.parseLong(cmdline.getOptionValue("num-members", "1000"));
+    @CommandLine.Option(names = { "--num-members" }, defaultValue = "1000",
+            description = "Number of members.")
+    int num_members;
+
+    @Override
+    public Integer call() throws Exception {
 
         StringBuilder bld = new StringBuilder();
         bld.append("interface MyMassiveInterface {\n");
@@ -56,7 +48,12 @@ public class MassiveKlass extends MyTestCaseBase {
         }
 
         for (int i = 0; i < num_members; i ++) {
-            bld.append("public int m_" + i + ";\n");
+            // alternate between obj and pod to increase number of oop map blocks in Klass?
+            if (i % 2 == 0) {
+                bld.append("public Object m_" + i + ";\n");
+            } else {
+                bld.append("public int m_" + i + ";\n");
+            }
         }
 
         bld.append("};");
@@ -77,12 +74,8 @@ public class MassiveKlass extends MyTestCaseBase {
 
         System.out.println("Done");
 
+        return 0;
 
     }
 
-    public static void main(String args[]) throws Exception {
-        MassiveKlass test = new MassiveKlass();
-        test.run(args);
-
-    }
 }
