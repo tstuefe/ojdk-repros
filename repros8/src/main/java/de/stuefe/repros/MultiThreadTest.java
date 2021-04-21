@@ -38,9 +38,16 @@ public class MultiThreadTest {
         }
 
         Sleeper[] sleepers = new Sleeper[num_threads];
-        for (int i = 0; i < num_threads; i ++) {
-            sleepers[i] = new Sleeper();
-            sleepers[i].start();
+        int created = 0;
+        try {
+            for (int i = 0; i < num_threads; i++) {
+                sleepers[i] = new Sleeper();
+                sleepers[i].start();
+                created ++;
+            }
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            System.out.println("After: " + created + " threads.");
         }
 
         MiscUtils.waitForKeyPress();
