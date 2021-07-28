@@ -2,6 +2,7 @@ package de.stuefe.repros;
 
 import picocli.CommandLine;
 
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "MultiThreadTest", mixinStandardHelpOptions = true,
@@ -15,6 +16,10 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
     @CommandLine.Option(names = { "--wait-time" }, defaultValue = "10",
             description = "Seconds each thread is alive.")
     int secs;
+
+    @CommandLine.Option(names = { "--repeat" }, defaultValue = "1",
+            description = "how often we repeat this.")
+    int repeat;
 
     @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
@@ -48,42 +53,58 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
-        waitForKeyPress("Will start " + num_threads + " threads, wait time " + secs + "s...");
+        for (int cycle = 0; cycle < repeat; cycle ++) {
 
-        Thread[] sleepers = new Thread[num_threads];
-        int created = 0;
-        try {
-            for (int i = 0; i < num_threads; i++) {
-                sleepers[i] = new Sleeper();
-               // sleepers[i] = new Thread(() -> {});
-                sleepers[i].start();
-                created ++;
-                if (created % (num_threads / 10) == 0) {
-                    System.out.println("Created: " + created + "...");
-                }
+            if (repeat > 1) {
+                System.out.println("cycle: " + cycle);
             }
-        } catch (OutOfMemoryError e) {
-            e.printStackTrace();
-            waitForKeyPress("After: " + created + " threads.");
-            waitForKeyPress();
-        }
+            waitForKeyPress("Will start " + num_threads + " threads, wait time " + secs + "s...");
 
-        waitForKeyPress("Before joining...");
-
-        int joined = 0;
-        for (int i = 0; i < num_threads; i ++) {
+            Thread[] sleepers = new Thread[num_threads];
+            int created = 0;
             try {
-                sleepers[i].join();
-                joined++;
-                if (joined % (num_threads / 10) == 0) {
-                    System.out.println("Joined: " + joined + "...");
+                for (int i = 0; i < num_threads; i++) {
+                    sleepers[i] = new Sleeper();
+                    // sleepers[i] = new Thread(() -> {});
+                    sleepers[i].start();
+                    created++;
+                    if (created % (num_threads / 10) == 0) {
+                        System.out.println("Created: " + created + "...");
+                    }
                 }
-            } catch (InterruptedException e) {
+            } catch (OutOfMemoryError e) {
                 e.printStackTrace();
+                waitForKeyPress("After: " + created + " threads.");
+                waitForKeyPress();
             }
+
+            waitForKeyPress("Before joining...");
+
+            int joined = 0;
+            for (int i = 0; i < num_threads; i++) {
+                try {
+                    sleepers[i].join();
+                    joined++;
+                    if (joined % (num_threads / 10) == 0) {
+                        System.out.println("Joined: " + joined + "...");
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            waitForKeyPress("After joining, before GC...");
+
+            for (int i = 0; i < num_threads; i++) {
+                sleepers[i] = null;
+            }
+            System.gc();
+            System.gc();
+
         }
 
-        waitForKeyPress();
+        waitForKeyPress("Before end...");
+
 
         return 0;
     }
