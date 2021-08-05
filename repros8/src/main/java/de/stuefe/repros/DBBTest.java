@@ -1,39 +1,51 @@
 package de.stuefe.repros;
 
 
+import picocli.CommandLine;
+
 import java.nio.ByteBuffer;
+import java.util.concurrent.Callable;
 
 
-public class DBBTest {
+@CommandLine.Command(name = "DBBTest", mixinStandardHelpOptions = true,
+        description = "Simple direct bytebuffer test.")
+public class DBBTest extends TestCaseBase implements Callable<Integer> {
 
-    public static void main(String[] args) throws Exception {
+    @CommandLine.Option(names = { "--num-buffers" },
+            description = "Number of buffers (default: ${DEFAULT-VALUE})")
+    int num_buffers = 4;
 
-        if (args.length != 2) {
-            System.out.println("Usage: DBBTest <num buffers> <size buffers in M>");
-        }
+    @CommandLine.Option(names = { "--size-buffers" },
+            description = "Size, in MB, of buffers (default: ${DEFAULT-VALUE})")
+    int size_buffers = 4;
 
-        int numBuffers = Integer.parseInt(args[0]);
-        int sizeBuffers = Integer.parseInt(args[1]) * 1024 * 1024;
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new DBBTest()).execute(args);
+        System.exit(exitCode);
+    }
+
+    @Override
+    public Integer call() throws Exception {
 
         System.out.println("<press key>");
         System.in.read();
-        System.out.println("Allocating " + numBuffers + " buffers a " + sizeBuffers + " bytes...");
-        ByteBuffer buffers[] = new ByteBuffer[numBuffers];
-        for (int i = 0; i < numBuffers; i ++) {
-            ByteBuffer b = ByteBuffer.allocateDirect(sizeBuffers);
+        System.out.println("Allocating " + num_buffers + " buffers a " + size_buffers + " bytes...");
+        ByteBuffer buffers[] = new ByteBuffer[num_buffers];
+        for (int i = 0; i < num_buffers; i ++) {
+            ByteBuffer b = ByteBuffer.allocateDirect(size_buffers);
             buffers[i] = b;
         }
 
         System.out.println("<press key for GC>");
         System.in.read();
 
-        for (int i = 0; i < numBuffers; i ++) {
+        for (int i = 0; i < num_buffers; i ++) {
             buffers[i] = null;
         }
         System.gc();
         System.out.println("<press key>");
         System.in.read();
-
+        return 0;
     }
 
 }

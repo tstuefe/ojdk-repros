@@ -9,10 +9,12 @@ import java.util.concurrent.Callable;
         description = "Just burn cpu on a number of threads.")
 public class Burn implements Callable<Integer> {
 
-    @CommandLine.Parameters(index = "0", description = "Number of threads.")
+    @CommandLine.Option(names = { "--num-threads" },
+            description = "Number of threads (default: ${DEFAULT-VALUE})")
     int numThreads = 1;
 
-    @CommandLine.Parameters(index = "1", description = "Number of threads.")
+    @CommandLine.Option(names = { "--time" },
+            description = "Burn time in seconds (default: ${DEFAULT-VALUE})")
     int seconds = 10;
 
     volatile static long l = 0;

@@ -11,7 +11,15 @@ import java.util.concurrent.Callable;
         description = "Allocate C Heap; optionally leak or peak.")
 public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--size" }, defaultValue = "8",
+    @CommandLine.Option(names = { "--auto-yes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
+
+    @CommandLine.Option(names = { "--size" },
             description = "Allocation size (default: ${DEFAULT-VALUE})")
     int allocationSize = 8;
 
@@ -28,7 +36,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
     boolean touch = true;
 
     enum TestType { peak, leak };
-    @CommandLine.Option(names = { "--type" }, defaultValue = "peak",
+    @CommandLine.Option(names = { "--type" },
             description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
     TestType testType;
 
@@ -70,6 +78,8 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+
+        initialize(false, auto_yes, nowait);
 
         System.out.println("Number of Cylces: " + numCycles);
         System.out.println("Number of Allocations: " + numAllocations);
