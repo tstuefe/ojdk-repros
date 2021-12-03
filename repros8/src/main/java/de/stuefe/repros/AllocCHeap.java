@@ -38,7 +38,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
     enum TestType { peak, leak };
     @CommandLine.Option(names = { "--type" },
             description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-    TestType testType;
+    TestType testType = TestType.leak;
 
     @CommandLine.Option(names = { "--noise" },
             description = "A \"noise level\" indicator - if > 0, executes lots of malloc/free calls concurrently to " +
@@ -68,6 +68,9 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             while(!stopnoise) {
                 for (int i = 0; i < p.length; i ++) {
                     p[i] = theUnsafe.allocateMemory(random.nextInt(30));
+                    if (p[i] == 0) {
+                        throw new RuntimeException("malloc failed");
+                    }
                 }
                 for (int i = 0; i < p.length; i ++) {
                     theUnsafe.freeMemory(p[i]);
@@ -108,6 +111,9 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
             for (int n = 0; n < numAllocations; n++) {
                 long p = theUnsafe.allocateMemory(allocationSize);
+                if (p == 0) {
+                    throw new RuntimeException("malloc failed");
+                }
                 ptrs[n] = p;
                 if (touch) {
                     touchMemory(theUnsafe, p, allocationSize);

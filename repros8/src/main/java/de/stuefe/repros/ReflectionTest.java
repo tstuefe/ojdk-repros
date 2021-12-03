@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.Callable;
 
 import de.stuefe.repros.metaspace.internals.InMemoryJavaFileManager;
@@ -20,8 +21,9 @@ public class ReflectionTest extends TestCaseBase implements Callable<Integer> {
     int num_classes = 1000;
 
     @CommandLine.Option(names = {"--size-classes"},
-            description = "Number of classes (default: ${DEFAULT-VALUE})")
+            description = "Number of classes (default: ${DEFAULT-VALUE}, negative value: randomize from [0...n*2).)")
     int size_classes = 5;
+    boolean randomize_class_size = false;
 
     @CommandLine.Option(names = {"--cycles"},
             description = "Number of load/unload cycles (default: ${DEFAULT-VALUE})")
@@ -62,11 +64,17 @@ public class ReflectionTest extends TestCaseBase implements Callable<Integer> {
         return "myclass_size_" + sizeFactor + "_number_" + number;
     }
 
-    private static void generateClasses(int numClasses, int sizeFactor) {
+    static java.util.Random rand = new Random();
+
+    private void generateClasses(int numClasses, int sizeFactor) {
         ProgressPrinter pp = new ProgressPrinter();
         for (int i = 0; i < numClasses; i++) {
             String className = nameClass(i, sizeFactor);
-            createRandomClass(className, sizeFactor);
+            int size = sizeFactor;
+            if (randomize_class_size) {
+                size = 1 + rand.nextInt(size * 2);
+            }
+            createRandomClass(className, size);
             pp.inc();
         }
         pp.done();
@@ -75,8 +83,13 @@ public class ReflectionTest extends TestCaseBase implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
+        if (size_classes < 0) {
+            size_classes = -size_classes;
+            randomize_class_size = true;
+        }
+
         System.out.println("num_classes: " + num_classes);
-        System.out.println("size_classes: " + size_classes);
+        System.out.println("size_classes: " + size_classes + (randomize_class_size ? "-ish" : ""));
         System.out.println("cycles: " + cycles);
         System.out.println("invocations_per_cycle: " + invocations_per_cycle);
         System.out.println("gc_each_cycle: " + gc_each_cycle);
