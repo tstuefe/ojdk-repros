@@ -15,8 +15,12 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "Autoyes.")
     boolean auto_yes;
 
+    @CommandLine.Option(names = { "--waitsecs" }, defaultValue = "0",
+            description = "If autoyes, how many seconds to wait per step (default: ${DEFAULT-VALUE}).")
+    int waitsecs;
+
     @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
-            description = "do not wait (only with autoyes).")
+            description = "do not wait (only with autoyes).0")
     boolean nowait;
 
     @CommandLine.Option(names = { "--size" },
@@ -107,7 +111,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         for (int cycle = 0; cycle < numCycles; cycle ++) {
 
-            waitForKeyPress("Cycle " + cycle + ": before allocation...");
+            waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
 
             for (int n = 0; n < numAllocations; n++) {
                 long p = theUnsafe.allocateMemory(allocationSize);
@@ -120,15 +124,15 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                 }
             }
 
-            waitForKeyPress("Cycle " + cycle + ": allocation phase completed.");
+            waitForKeyPress("Cycle " + cycle + ": allocation phase completed.", 0);
 
             if (testType == TestType.peak) {
-                waitForKeyPress("Cycle " + cycle + ": before free...");
+                waitForKeyPress("Cycle " + cycle + ": before free...", 0);
                 for (int n = 0; n < numAllocations; n++) {
                     theUnsafe.freeMemory(ptrs[n]);
                     ptrs[n] = 0;
                 }
-                waitForKeyPress("Cycle " + cycle + ": free phase completed.");
+                waitForKeyPress("Cycle " + cycle + ": free phase completed.", 0);
             }
         }
 
