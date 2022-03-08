@@ -1,0 +1,313 @@
+[
+  {
+    "name" : "de.stuefe.repros.AllocCHeap",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "alloc_delay" },
+      { "name" : "allocationSize" },
+      { "name" : "auto_yes" },
+      { "name" : "free_delay" },
+      { "name" : "noise" },
+      { "name" : "notouch" },
+      { "name" : "nowait" },
+      { "name" : "numAllocations" },
+      { "name" : "numCycles" },
+      { "name" : "randfactor" },
+      { "name" : "randseed" },
+      { "name" : "testType" },
+      { "name" : "waitsecs" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap$TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap.TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.Burn",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "numThreads" },
+      { "name" : "seconds" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.DBBTest",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "num_buffers" },
+      { "name" : "size_buffers" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.Hello",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "do_wait" },
+      { "name" : "returnval" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.ManySmallObjects",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "num_objects" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.MultiThreadTest",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "num_threads" },
+      { "name" : "repeat" },
+      { "name" : "secs" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.ReflectionTest",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "cycles" },
+      { "name" : "gc_each_cycle" },
+      { "name" : "invocations_per_cycle" },
+      { "name" : "nowait" },
+      { "name" : "num_classes" },
+      { "name" : "size_classes" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.SimpleLambda2",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "repeat_count" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.StackOverflow",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "do_wait" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.StringInternTest",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "num" },
+      { "name" : "numCycles" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.BreatheInBreatheOut",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "numClassesPerLargeLoader" },
+      { "name" : "numClassesPerSmallLoader" },
+      { "name" : "numLargeLoaders" },
+      { "name" : "numSmallLoaders" },
+      { "name" : "sizeFactorClasses" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.ClassLifeCycle",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "numClasses" },
+      { "name" : "sizeFactor" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.InterleavedLoaders",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "class_size_factor" },
+      { "name" : "interleave" },
+      { "name" : "nowait" },
+      { "name" : "num_classes_per_loader" },
+      { "name" : "num_generations" },
+      { "name" : "num_loaders_per_generation" },
+      { "name" : "repeat_cycles" },
+      { "name" : "time_bottom" },
+      { "name" : "time_falling" },
+      { "name" : "time_prepost" },
+      { "name" : "time_raise" },
+      { "name" : "time_top" },
+      { "name" : "timefactor" },
+      { "name" : "wiggle" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.JustLoadAndLoad",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "numLoaders" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.ManyLambdas",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "num_lambdas" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.ManyLoadersWithWildyVaryingLifespans",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "class_size_factor" },
+      { "name" : "num_classes_per_loader" },
+      { "name" : "num_loaders" },
+      { "name" : "wiggle" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.MassiveKlass",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "num_imethods" },
+      { "name" : "num_members" },
+      { "name" : "num_methods" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.MultiThreadedStress",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "profile_name" },
+      { "name" : "time" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.ParallelLoaders",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "class_size_factor" },
+      { "name" : "nowait" },
+      { "name" : "num_classes_per_loader" },
+      { "name" : "num_clusters" },
+      { "name" : "num_loaders_per_cluster" },
+      { "name" : "wiggle" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.metaspace.ReloadSystemClass",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "num" }
+    ]
+  },
+  {
+    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  }
+]
