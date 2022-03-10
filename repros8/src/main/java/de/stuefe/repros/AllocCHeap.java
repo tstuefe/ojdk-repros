@@ -60,6 +60,11 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
     TestType testType = TestType.leak;
 
+    enum FreeType { inorder, interleaved };
+    @CommandLine.Option(names = { "--freetype" },
+            description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+    FreeType freeType = FreeType.interleaved;
+
     @CommandLine.Option(names = { "--noise" },
             description = "A \"noise level\" indicator - if > 0, executes lots of malloc/free calls concurrently to " +
                           "stress the allocation layer (default: ${DEFAULT-VALUE})")
@@ -76,25 +81,81 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         }
     }
 
+    class Allocator {
+        long p[];
+        Random rand;
+        int freed;
+        public Allocator(int num, long seed) {
+            p = new long[num];
+            rand = new Random(seed);
+            int freed = 0;
+        }
+
+        void allocateAll() {
+            for (int i = 0; i < p.length; i ++) {
+                int sz = randomized_allocation_size();
+                p[i] = theUnsafe.allocateMemory(sz);
+                if (!notouch) {
+                    touchMemory(theUnsafe, p[i], sz);
+                }
+                if ((i % 10000) == 0) {
+                    sleep_delay(alloc_delay);
+                }
+            }
+        }
+
+        void freeInOrder(int numToFree) {
+            for (int i = freed; i < numToFree; i ++) {
+                if (p[i] != 0) {
+                    theUnsafe.freeMemory(p[i]);
+                    p[i] = 0;
+                    if ((i % 10000) == 0) {
+                        sleep_delay(free_delay);
+                    }
+                }
+            }
+            freed += numToFree;
+        }
+
+        void freeInterleaved(int numToFree) {
+            for (int offs = 0; offs < 2; offs ++) {
+                for (int i = offs; i < numToFree; i += 2) {
+                    if (p[i] != 0) {
+                        theUnsafe.freeMemory(p[i]);
+                        p[i] = 0;
+                        if ((i % 10000) == 0) {
+                            sleep_delay(free_delay);
+                        }
+                    }
+                }
+            }
+            freed += numToFree;
+        }
+
+        void freeAll() {
+            freeSome(p.length);
+        }
+
+        void freeSome(int numToFree) {
+            if (freeType == FreeType.interleaved) {
+                freeInterleaved(numToFree);
+            } else {
+                freeInOrder(numToFree);
+            }
+        }
+    }
+
     static boolean stopnoise = false;
     static Unsafe theUnsafe;
     static Random random = new Random();
 
     class NoiseThread extends Thread {
-
+        Allocator a = new Allocator(10, 5555);
         @Override
         public void run() {
-            long[] p = new long[10];
             while(!stopnoise) {
-                for (int i = 0; i < p.length; i ++) {
-                    p[i] = theUnsafe.allocateMemory(random.nextInt(30));
-                    if (p[i] == 0) {
-                        throw new RuntimeException("malloc failed");
-                    }
-                }
-                for (int i = 0; i < p.length; i ++) {
-                    theUnsafe.freeMemory(p[i]);
-                }
+                a.allocateAll();
+                a.freeAll();
             }
         }
     }
@@ -142,11 +203,12 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         System.out.println("Alloc delay: " + alloc_delay);
         System.out.println("Free delay: " + free_delay);
 
+        waitForKeyPress("Lets start?", 6);
+
         Field f = Unsafe.class.getDeclaredField("theUnsafe");
         f.setAccessible(true);
         theUnsafe = (Unsafe) f.get(null);
 
-        long[] ptrs = new long[numAllocations];
         Thread[] noiseThreads = new Thread[noise];
 
         if (noise > 0) {
@@ -156,35 +218,19 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             }
         }
 
+        Allocator a = new Allocator(numAllocations, randseed);
+
         for (int cycle = 0; cycle < numCycles; cycle ++) {
 
             waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
 
-            for (int n = 0; n < numAllocations; n++) {
-                long p = theUnsafe.allocateMemory(randomized_allocation_size());
-                if (p == 0) {
-                    throw new RuntimeException("malloc failed");
-                }
-                ptrs[n] = p;
-                if (!notouch) {
-                    touchMemory(theUnsafe, p, randomized_allocation_size());
-                }
-                if ((n % 10000) == 0) {
-                    sleep_delay(alloc_delay);
-                }
-            }
+            a.allocateAll();
 
             waitForKeyPress("Cycle " + cycle + ": allocation phase completed.", 0);
 
             if (testType == TestType.peak) {
                 waitForKeyPress("Cycle " + cycle + ": before free...", 0);
-                for (int n = 0; n < numAllocations; n++) {
-                    theUnsafe.freeMemory(ptrs[n]);
-                    ptrs[n] = 0;
-                    if ((n % 10000) == 0) {
-                        sleep_delay(free_delay);
-                    }
-                }
+                a.freeAll();
                 waitForKeyPress("Cycle " + cycle + ": free phase completed.", 0);
             }
         }

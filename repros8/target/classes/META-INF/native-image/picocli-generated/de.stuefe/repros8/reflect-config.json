@@ -9,6 +9,7 @@
       { "name" : "alloc_delay" },
       { "name" : "allocationSize" },
       { "name" : "auto_yes" },
+      { "name" : "freeType" },
       { "name" : "free_delay" },
       { "name" : "noise" },
       { "name" : "notouch" },
@@ -22,7 +23,21 @@
     ]
   },
   {
+    "name" : "de.stuefe.repros.AllocCHeap$FreeType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
     "name" : "de.stuefe.repros.AllocCHeap$TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap.FreeType",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,

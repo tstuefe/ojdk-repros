@@ -37,12 +37,14 @@ de/stuefe/repros/metaspace/InterleavedLoaders$LoaderInfo.class
 de/stuefe/repros/Simple.class
 de/stuefe/repros/metaspace/internals/InMemoryClassFile.class
 de/stuefe/repros/metaspace/MultiThreadedStress$TestClassLoader.class
+de/stuefe/repros/AllocCHeap$FreeType.class
 de/stuefe/repros/process/RuntimeExecWithManyFilesTest.class
 de/stuefe/repros/Hello.class
 de/stuefe/repros/ManySmallObjects.class
 de/stuefe/repros/SimpleMethodHandleTest.class
 de/stuefe/repros/AllocCHeap$TestType.class
 de/stuefe/repros/SimpleBase.class
+de/stuefe/repros/AllocCHeap$Allocator.class
 de/stuefe/repros/ReflectionTest.class
 de/stuefe/repros/Simple2.class
 de/stuefe/repros/MultiThreadTest.class
