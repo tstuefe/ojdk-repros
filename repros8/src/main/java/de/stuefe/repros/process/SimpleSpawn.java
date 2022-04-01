@@ -4,7 +4,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RuntimeExecSimpleTest {
+public class SimpleSpawn {
 
     public static void main(String[] args) throws Exception {
 

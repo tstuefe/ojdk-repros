@@ -308,6 +308,22 @@
     ]
   },
   {
+    "name" : "de.stuefe.repros.process.MultiSpawn",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "command" },
+      { "name" : "nowait" },
+      { "name" : "num_threads" },
+      { "name" : "redirect_io" },
+      { "name" : "repeat_endlessly" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
     "name" : "java.util.Collections$UnmodifiableRandomAccessList",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

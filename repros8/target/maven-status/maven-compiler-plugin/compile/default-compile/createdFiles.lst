@@ -2,10 +2,10 @@ de/stuefe/repros/metaspace/ManyLoadersWithWildyVaryingLifespans.class
 de/stuefe/repros/MiscUtils.class
 de/stuefe/repros/MultiThreadTest$Sleeper.class
 de/stuefe/repros/metaspace/ClassLifeCycle$LoaderGeneration.class
-de/stuefe/repros/process/RuntimeExecSimpleTest.class
 META-INF/native-image/picocli-generated/de.stuefe/repros8/resource-config.json
 de/stuefe/repros/RouslanTest$1.class
 de/stuefe/repros/SimpleMethodHandleTest$X.class
+de/stuefe/repros/process/MultiSpawn.class
 de/stuefe/repros/MappedFileExample.class
 de/stuefe/repros/metaspace/MultiThreadedStress$TestProfile.class
 de/stuefe/repros/metaspace/internals/InMemoryJavaFileManager.class
@@ -17,6 +17,7 @@ de/stuefe/repros/metaspace/internals/InMemoryJavaFileManager$1.class
 de/stuefe/repros/DBBTest.class
 de/stuefe/repros/metaspace/internals/InMemoryClassLoader.class
 de/stuefe/repros/ProgressPrinter.class
+de/stuefe/repros/process/SpawnWithManyFilesTest.class
 de/stuefe/repros/StringDedupLeakTest.class
 de/stuefe/repros/StringInternTest.class
 de/stuefe/repros/SimpleFileTest.class
@@ -38,7 +39,6 @@ de/stuefe/repros/Simple.class
 de/stuefe/repros/metaspace/internals/InMemoryClassFile.class
 de/stuefe/repros/metaspace/MultiThreadedStress$TestClassLoader.class
 de/stuefe/repros/AllocCHeap$FreeType.class
-de/stuefe/repros/process/RuntimeExecWithManyFilesTest.class
 de/stuefe/repros/Hello.class
 de/stuefe/repros/ManySmallObjects.class
 de/stuefe/repros/SimpleMethodHandleTest.class
@@ -48,6 +48,8 @@ de/stuefe/repros/AllocCHeap$Allocator.class
 de/stuefe/repros/ReflectionTest.class
 de/stuefe/repros/Simple2.class
 de/stuefe/repros/MultiThreadTest.class
+de/stuefe/repros/process/SimpleSpawn.class
+de/stuefe/repros/process/MultiSpawn$ProcessRunner.class
 META-INF/native-image/picocli-generated/de.stuefe/repros8/proxy-config.json
 de/stuefe/repros/ManySmallObjects$D.class
 de/stuefe/repros/metaspace/internals/InMemorySourceFile.class
