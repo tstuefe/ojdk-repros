@@ -1,0 +1,5 @@
+de/stuefe/repros/TestCaseBase.class
+META-INF/native-image/picocli-generated/de.stuefe/repros11/reflect-config.json
+de/stuefe/repros/Skeleton.class
+META-INF/native-image/picocli-generated/de.stuefe/repros11/proxy-config.json
+META-INF/native-image/picocli-generated/de.stuefe/repros11/resource-config.json

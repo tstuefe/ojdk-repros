@@ -36,6 +36,7 @@ de/stuefe/repros/process/ProcessTreeTest.class
 de/stuefe/repros/metaspace/MultiThreadedStress.class
 de/stuefe/repros/metaspace/ManyLambdas.class
 de/stuefe/repros/metaspace/InterleavedLoaders$LoaderInfo.class
+de/stuefe/repros/Skeleton.class
 de/stuefe/repros/Simple.class
 de/stuefe/repros/metaspace/internals/InMemoryClassFile.class
 de/stuefe/repros/metaspace/MultiThreadedStress$TestClassLoader.class

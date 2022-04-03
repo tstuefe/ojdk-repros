@@ -142,6 +142,19 @@
     ]
   },
   {
+    "name" : "de.stuefe.repros.Skeleton",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "nowait" },
+      { "name" : "verbose" },
+      { "name" : "waitsecs" }
+    ]
+  },
+  {
     "name" : "de.stuefe.repros.StackOverflow",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,

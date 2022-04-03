@@ -14,6 +14,7 @@
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/SimpleLambda.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/WaishonTest.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/ManyLambdas.java
+/shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/Skeleton.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/MappedFileExample.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/InterleavedLoaders.java
