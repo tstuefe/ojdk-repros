@@ -19,6 +19,7 @@
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/InterleavedLoaders.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/ProgressPrinter.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/ClassLifeCycle.java
+/shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/process/ProcessTreeTest.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/internals/InMemorySourceFile.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/internals/Utils.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/SimpleLambda2.java

@@ -32,6 +32,7 @@ META-INF/native-image/picocli-generated/de.stuefe/repros8/reflect-config.json
 de/stuefe/repros/DeadLockExample.class
 de/stuefe/repros/metaspace/JustLoadAndLoad.class
 de/stuefe/repros/StackOverflow.class
+de/stuefe/repros/process/ProcessTreeTest.class
 de/stuefe/repros/metaspace/MultiThreadedStress.class
 de/stuefe/repros/metaspace/ManyLambdas.class
 de/stuefe/repros/metaspace/InterleavedLoaders$LoaderInfo.class

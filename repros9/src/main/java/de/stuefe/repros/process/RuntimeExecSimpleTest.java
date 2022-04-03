@@ -1,4 +1,4 @@
-package de.stuefe.repros;
+package de.stuefe.repros.process;
 
 import java.io.IOException;
 
