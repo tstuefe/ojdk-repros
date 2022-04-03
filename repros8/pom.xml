@@ -30,31 +30,6 @@
     <!-- pack all deps into my jar -->
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.2.1</version>
-                <configuration>
-                    <!-- put your configurations here -->
-
-                    <artifactSet>
-
-
-
-                    </artifactSet>
-
-
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
 
             <!-- test -->
             <plugin>
