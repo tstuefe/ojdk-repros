@@ -1,0 +1,71 @@
+[
+  {
+    "name" : "de.stuefe.repros.AllocCHeap",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "alloc_delay" },
+      { "name" : "allocationSize" },
+      { "name" : "auto_yes" },
+      { "name" : "freeType" },
+      { "name" : "free_delay" },
+      { "name" : "noise" },
+      { "name" : "notouch" },
+      { "name" : "nowait" },
+      { "name" : "numAllocations" },
+      { "name" : "numCycles" },
+      { "name" : "randfactor" },
+      { "name" : "randseed" },
+      { "name" : "testType" },
+      { "name" : "waitsecs" }
+    ]
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap$FreeType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap$TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap.FreeType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap.TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.util.Collections$UnmodifiableRandomAccessList",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "picocli.CommandLine$AutoHelpMixin",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "helpRequested" },
+      { "name" : "versionRequested" }
+    ]
+  }
+]

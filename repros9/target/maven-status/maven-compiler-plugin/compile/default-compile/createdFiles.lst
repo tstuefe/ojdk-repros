@@ -1,2 +1,11 @@
-de/stuefe/repros/process/RuntimeExecSimpleTest.class
 de/stuefe/repros/process/ProcessTreeTest.class
+de/stuefe/repros/AllocCHeap$TestType.class
+de/stuefe/repros/AllocCHeap$Allocator.class
+META-INF/native-image/picocli-generated/de.stuefe/repros9/reflect-config.json
+de/stuefe/repros/process/RuntimeExecSimpleTest.class
+de/stuefe/repros/TestCaseBase.class
+META-INF/native-image/picocli-generated/de.stuefe/repros9/resource-config.json
+de/stuefe/repros/AllocCHeap.class
+de/stuefe/repros/AllocCHeap$NoiseThread.class
+de/stuefe/repros/AllocCHeap$FreeType.class
+META-INF/native-image/picocli-generated/de.stuefe/repros9/proxy-config.json

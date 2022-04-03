@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CompilerConfiguration">
-    <annotationProcessing>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="repros9" />
-      </profile>
-      <profile name="Annotation profile for repros" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <option name="project" value="de.stuefe/repros8" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli-codegen/4.0.3/picocli-codegen-4.0.3.jar" />
-          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli/4.0.3/picocli-4.0.3.jar" />
-        </processorPath>
-        <module name="repros8" />
-      </profile>
-    </annotationProcessing>
-  </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="repros8" options="-Aproject=de.stuefe/repros8" />
