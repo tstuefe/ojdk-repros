@@ -1,8 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Annotation profile for repros" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <option name="project" value="de.stuefe/repros17" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli-codegen/4.0.3/picocli-codegen-4.0.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli/4.0.3/picocli-4.0.3.jar" />
+        </processorPath>
+        <module name="repros17" />
+      </profile>
+      <profile name="Annotation profile for repros8" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <option name="project" value="de.stuefe/repros8" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli-codegen/4.0.3/picocli-codegen-4.0.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli/4.0.3/picocli-4.0.3.jar" />
+        </processorPath>
+        <module name="repros8" />
+      </profile>
+      <profile name="Annotation profile for repros11" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <option name="project" value="de.stuefe/repros11" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli-codegen/4.0.3/picocli-codegen-4.0.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli/4.0.3/picocli-4.0.3.jar" />
+        </processorPath>
+        <module name="repros11" />
+      </profile>
+      <profile name="Annotation profile for repros9" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <option name="project" value="de.stuefe/repros9" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli-codegen/4.0.3/picocli-codegen-4.0.3.jar" />
+          <entry name="$MAVEN_REPOSITORY$/info/picocli/picocli/4.0.3/picocli-4.0.3.jar" />
+        </processorPath>
+        <module name="repros9" />
+      </profile>
+    </annotationProcessing>
+  </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="repros11" options="-Aproject=de.stuefe/repros11" />
+      <module name="repros17" options="-Aproject=de.stuefe/repros17" />
       <module name="repros8" options="-Aproject=de.stuefe/repros8" />
+      <module name="repros9" options="-Aproject=de.stuefe/repros9" />
     </option>
   </component>
 </project>
