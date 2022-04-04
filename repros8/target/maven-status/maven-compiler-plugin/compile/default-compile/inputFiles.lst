@@ -1,6 +1,7 @@
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/ReflectionTest.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/TestCaseBase.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/SimpleMethodHandleTest.java
+/shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/process/PrintProcess.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/internals/InMemoryJavaFileManager.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/StackOverflow.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/MassiveKlass.java

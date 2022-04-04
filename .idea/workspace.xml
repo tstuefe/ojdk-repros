@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/process/PrintProcess.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repros9/src/main/java/de/stuefe/repros/process/PrintProcess.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros11/target/original-repros11-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros11/target/original-repros11-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros11/target/repros11-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros11/target/repros11-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros17/target/original-repros17-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros17/target/original-repros17-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros17/target/repros17-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros17/target/repros17-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/original-repros8-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/original-repros8-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/repros8-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/repros8-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros9/target/original-repros9-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros9/target/original-repros9-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros9/target/repros9-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros9/target/repros9-1.0.jar" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="27Jqp3cVwa0nT0ZPTbilkibw6QT" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="de.stuefe.repros.process" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="" />
+      <created>1649048716638</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1649048716638</updated>
+    </task>
+    <servers />
+  </component>
+</project>

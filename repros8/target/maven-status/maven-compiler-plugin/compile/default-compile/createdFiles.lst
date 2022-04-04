@@ -23,6 +23,7 @@ de/stuefe/repros/StringInternTest.class
 de/stuefe/repros/SimpleFileTest.class
 de/stuefe/repros/RouslanTest.class
 de/stuefe/repros/SimpleLambda.class
+de/stuefe/repros/process/PrintProcess.class
 de/stuefe/repros/metaspace/ClassLifeCycle.class
 de/stuefe/repros/SimpleLambda2.class
 de/stuefe/repros/metaspace/ParallelLoaders$LoaderGeneration.class

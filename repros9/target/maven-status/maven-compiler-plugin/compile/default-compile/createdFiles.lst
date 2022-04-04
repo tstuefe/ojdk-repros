@@ -4,4 +4,5 @@ de/stuefe/repros/process/RuntimeExecSimpleTest.class
 de/stuefe/repros/TestCaseBase.class
 de/stuefe/repros/Skeleton.class
 META-INF/native-image/picocli-generated/de.stuefe/repros9/resource-config.json
+de/stuefe/repros/process/PrintProcess.class
 META-INF/native-image/picocli-generated/de.stuefe/repros9/proxy-config.json
