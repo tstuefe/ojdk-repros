@@ -9,35 +9,21 @@
       { "name" : "alloc_delay" },
       { "name" : "allocationSize" },
       { "name" : "auto_yes" },
-      { "name" : "freeType" },
+      { "name" : "freeShuffleFactor" },
       { "name" : "free_delay" },
-      { "name" : "noise" },
       { "name" : "notouch" },
       { "name" : "nowait" },
       { "name" : "numAllocations" },
       { "name" : "numCycles" },
-      { "name" : "randfactor" },
+      { "name" : "numThreads" },
       { "name" : "randseed" },
+      { "name" : "sizeShuffleFactor" },
       { "name" : "testType" },
       { "name" : "waitsecs" }
     ]
   },
   {
-    "name" : "de.stuefe.repros.AllocCHeap$FreeType",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
     "name" : "de.stuefe.repros.AllocCHeap$TestType",
-    "allDeclaredConstructors" : true,
-    "allPublicConstructors" : true,
-    "allDeclaredMethods" : true,
-    "allPublicMethods" : true
-  },
-  {
-    "name" : "de.stuefe.repros.AllocCHeap.FreeType",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
