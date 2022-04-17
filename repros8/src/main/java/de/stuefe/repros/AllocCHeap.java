@@ -161,7 +161,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                     sleep_delay(alloc_delay);
                 }
             }
-            System.out.println("> " + allocated);
+            traceVerbose("Allocated: " + allocated);
         }
 
         void shuffleAllocations() {
@@ -271,6 +271,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             long netAllocationSizePerCycle = (long)allocationSize * numAllocations;
             System.out.println("Net allocation per cycle will be " + humanReadable(netAllocationSizePerCycle) +
                                 " +- " + humanReadable(dev) + ".");
+        }
+
+        if (allocationSize < 16) {
+            System.out.println("Please be aware that with NMT enabled, overhead may be substantial");
         }
 
         waitForKeyPress("Lets start?", 6);
