@@ -19,6 +19,7 @@
       { "name" : "randseed" },
       { "name" : "sizeShuffleFactor" },
       { "name" : "testType" },
+      { "name" : "verbose" },
       { "name" : "waitsecs" }
     ]
   },

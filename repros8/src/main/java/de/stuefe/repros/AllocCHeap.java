@@ -72,6 +72,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "do not wait (only with autoyes).")
     boolean nowait = false;
 
+    @CommandLine.Option(names = { "--verbose", "-v" },
+            description = "verbose mode.")
+    boolean verbose = false;
+
     public static void main(String... args) {
         int exitCode = new CommandLine(new AllocCHeap()).execute(args);
         System.exit(exitCode);
@@ -144,8 +148,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         }
 
         void allocateAll() {
+            long allocated = 0;
             for (int i = 0; i < pointers.getLength(); i ++) {
                 int sz = randomized_allocation_size();
+                allocated += sz;
                 long p = theUnsafe.allocateMemory(sz);
                 if (!notouch) {
                     touchMemory(theUnsafe, p, sz);
@@ -155,10 +161,14 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                     sleep_delay(alloc_delay);
                 }
             }
+            System.out.println("> " + allocated);
+        }
+
+        void shuffleAllocations() {
+            pointers.shuffle(rand, freeShuffleFactor);
         }
 
         void freeAll() {
-            pointers.shuffle(rand, freeShuffleFactor);
             for (int i = 0; i < pointers.getLength(); i ++) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
@@ -195,11 +205,15 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                     traceVerbose("Worker " + threadNum + " enters allocation phase.");
                     allocator.allocateAll();
                     traceVerbose("Worker " + threadNum + " finished allocation phase.");
+                    allocator.shuffleAllocations();
+                    traceVerbose("Worker " + threadNum + " finished shuffling.");
+                    barrier.await();
                     if (testType == TestType.peak) {
                         barrier.await();
                         traceVerbose("Worker " + threadNum + " enters free phase.");
                         allocator.freeAll();
                         traceVerbose("Worker " + threadNum + " finished free phase.");
+                        barrier.await();
                     }
                 }
             } catch (InterruptedException e) {
@@ -225,7 +239,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        initialize(false, auto_yes, nowait);
+        initialize(verbose, auto_yes, nowait);
 
         if (randseed == 0) {
             randseed = System.currentTimeMillis();
@@ -276,9 +290,11 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         for (int cycle = 0; cycle < numCycles; cycle ++) {
             waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
             barrier.await();
+            barrier.await();
             waitForKeyPress("Cycle " + cycle + ": allocation phase completed.", 0);
             if (testType == TestType.peak) {
                 waitForKeyPress("Cycle " + cycle + ": before free...", 0);
+                barrier.await();
                 barrier.await();
                 waitForKeyPress("Cycle " + cycle + ": free phase completed.", 0);
             }
