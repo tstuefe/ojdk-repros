@@ -1,6 +1,7 @@
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/ReflectionTest.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/TestCaseBase.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/SimpleMethodHandleTest.java
+/shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/util/MemorySizeConverter.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/process/PrintProcess.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/internals/InMemoryJavaFileManager.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/StackOverflow.java
@@ -41,5 +42,6 @@
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/StringInternTest.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/ReloadSystemClass.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/DeadLockExample.java
+/shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/util/MemorySize.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/Burn.java
 /shared/projects/openjdk/test/repros/repros8/src/main/java/de/stuefe/repros/metaspace/internals/InMemoryClassFile.java

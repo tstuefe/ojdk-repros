@@ -1,5 +1,7 @@
 package de.stuefe.repros;
 
+import de.stuefe.repros.util.MemorySize;
+import de.stuefe.repros.util.MemorySizeConverter;
 import picocli.CommandLine;
 import sun.misc.Unsafe;
 
@@ -13,18 +15,30 @@ import java.util.concurrent.CyclicBarrier;
         description = "Allocate C Heap; optionally leak or peak.")
 public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--num" },
-            description = "Number of allocations (default: ${DEFAULT-VALUE})")
-    int numAllocations = 1024*1024*64;
+    @CommandLine.Option(names = { "--scenario", "-S" },
+            description = "Scenario (valid values: ${COMPLETION-CANDIDATES}, default: ${DEFAULT-VALUE}).")
+    Scenario scenario = Scenario.leak;
+
+    @CommandLine.Option(names = { "--num", "-n" }, converter = MemorySizeConverter.class,
+            description = "Number of allocations. Accepts g, m, k suffixes.")
+    Long numAllocationsL = null;
+    int numAllocations = -1;
     int numAllocationsPerThread = -1;
 
-    @CommandLine.Option(names = { "--size" },
-            description = "Allocation size (default: ${DEFAULT-VALUE})")
-    int allocationSize = 8;
+    @CommandLine.Option(names = { "--size", "-s" }, converter = MemorySizeConverter.class,
+            description = "Allocation size. Accepts g, m, k suffixes.")
+    Long allocationSizeL = null;
+    long allocationSize = -1;
 
-    @CommandLine.Option(names = { "--notouch" },
-            description = "By default, we touch allocated memory. Can be switched off with --notouch (default: ${DEFAULT-VALUE}).")
-    boolean notouch = false;
+    enum TestType { peak, leak, partleak };
+    @CommandLine.Option(names = { "--type", "-t" },
+            description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+    TestType testType = null;
+
+    @CommandLine.Option(names = { "--touch" }, negatable = true,
+            description = "Touch allocated memory (default: true).")
+    Boolean touchB = null;
+    boolean touch = false;
 
     @CommandLine.Option(names = { "--allocdelay" },
             description = "Delay, in about 0.1 ns, between subsequent mallocs (default: ${DEFAULT-VALUE}).")
@@ -34,12 +48,6 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "Delay, in about 0.1 ns, between subsequent frees (default: ${DEFAULT-VALUE}).")
     int free_delay = 0;
 
-    enum TestType { peak, leak };
-    @CommandLine.Option(names = { "--type" },
-            description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-    TestType testType = TestType.leak;
-
-    enum FreeShuffleFactor { peak, leak };
     @CommandLine.Option(names = { "--free-shuffle-factor" },
             description = "If --type is peak, randomize free order between 1.0 (very random) and 0.0 (in order of allocation). (default: ${DEFAULT-VALUE})")
     double freeShuffleFactor = 0.0;
@@ -48,13 +56,13 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "Randomize allocation size (--size) by size +- (size * factor). Valid values are 0.0 - 1.0. (default: ${DEFAULT-VALUE})")
     double sizeShuffleFactor = 0.0;
 
-    @CommandLine.Option(names = { "--threads" },
+    @CommandLine.Option(names = { "--threads", "-T" },
             description = "Number of allocation threads (default: ${DEFAULT-VALUE})")
     int numThreads = 1;
 
-    @CommandLine.Option(names = { "--cycles" },
+    @CommandLine.Option(names = { "--cycles", "-c" },
             description = "Number of repeats (default: ${DEFAULT-VALUE})")
-    int numCycles = 3;
+    int numCycles = 5;
 
     @CommandLine.Option(names = { "--randseed" },
             description = "If not 0, fixed randomizer seed (default: ${DEFAULT-VALUE}).")
@@ -76,12 +84,33 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "verbose mode.")
     boolean verbose = false;
 
+    /**
+     * A handy way to specify a number of parameters in a row
+     */
+    enum Scenario {
+
+        leak((int)MemorySize.M.value() * 64, 8, TestType.leak),
+        saw((int)MemorySize.M.value() * 64, 8, TestType.peak),
+        saw_rising((int)MemorySize.M.value() * 64, 8, TestType.partleak),
+        giants(8, MemorySize.M.value() * 64, TestType.leak),
+        saw_giants(8, MemorySize.M.value() * 64, TestType.peak)
+        ;
+
+        public final int num;
+        public final long size;
+        public final TestType tt;
+
+        Scenario(int n, long sz, TestType tt) {
+            this.num = n; this.size = sz; this.tt = tt;
+        }
+    }
+
     public static void main(String... args) {
         int exitCode = new CommandLine(new AllocCHeap()).execute(args);
         System.exit(exitCode);
     }
 
-    static void touchMemory(Unsafe unsafe, long address, int size) {
+    static void touchMemory(Unsafe unsafe, long address, long size) {
         for(long p = address; p < (address + size); p += 4096) {
             unsafe.putLong(p, p);
         }
@@ -130,16 +159,19 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             rand = new Random(seed);
         }
 
-        int randomized_allocation_size() {
+        long randomized_allocation_size() {
             if (sizeShuffleFactor == 0.0) {
                 return allocationSize;
             } else {
+                if (((long)allocationSize * sizeShuffleFactor) > Integer.MAX_VALUE) {
+                    throw new RuntimeException("Allocation Size too big for shuffling");
+                }
                 int dev = (int)applied_deviation(allocationSize, sizeShuffleFactor);
                 int range = dev * 2;
                 if (range == 0) {
                     return allocationSize;
                 }
-                int sz = rand.nextInt(range) - dev + allocationSize;
+                long sz = rand.nextInt((int)range) - dev + allocationSize;
                 if (sz <= 0) {
                     sz = -sz;
                 }
@@ -150,10 +182,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         void allocateAll() {
             long allocated = 0;
             for (int i = 0; i < pointers.getLength(); i ++) {
-                int sz = randomized_allocation_size();
+                long sz = randomized_allocation_size();
                 allocated += sz;
                 long p = theUnsafe.allocateMemory(sz);
-                if (!notouch) {
+                if (touch) {
                     touchMemory(theUnsafe, p, sz);
                 }
                 pointers.set(i, p);
@@ -170,6 +202,13 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         void freeAll() {
             for (int i = 0; i < pointers.getLength(); i ++) {
+                long p = pointers.getAndClear(i);
+                theUnsafe.freeMemory(p);
+            }
+        }
+        void freeSome() {
+            // Only free some of the pointers (in this case, only every second)
+            for (int i = 0; i < pointers.getLength(); i += 2) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
             }
@@ -208,10 +247,14 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                     allocator.shuffleAllocations();
                     traceVerbose("Worker " + threadNum + " finished shuffling.");
                     barrier.await();
-                    if (testType == TestType.peak) {
+                    if (testType == TestType.peak || testType == TestType.partleak) {
                         barrier.await();
                         traceVerbose("Worker " + threadNum + " enters free phase.");
-                        allocator.freeAll();
+                        if (testType == TestType.peak) {
+                            allocator.freeAll();
+                        } else {
+                            allocator.freeSome();
+                        }
                         traceVerbose("Worker " + threadNum + " finished free phase.");
                         barrier.await();
                     }
@@ -245,25 +288,51 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             randseed = System.currentTimeMillis();
         }
 
+        // Honor scenario; but if explicitly specified values override the scenario
+        String numAllocationFromScenario = "";
+        String allocationSizeFromScenario = "";
+        String testTypeFromScenario = "";
+        if (numAllocationsL == null) {
+            numAllocationsL = new Long(scenario.num);
+            numAllocationFromScenario = " (from --scenario)";
+        }
+        if (allocationSizeL == null) {
+            allocationSizeL = new Long(scenario.size);
+            allocationSizeFromScenario = " (from --scenario)";
+        }
+        if (testType == null) {
+            testType = scenario.tt;
+            testTypeFromScenario = " (from --scenario)";
+        }
+
+        numAllocations = numAllocationsL.intValue();
         numAllocationsPerThread = numAllocations / numThreads;
+
+        allocationSize = allocationSizeL.longValue();
+        touch = (touchB != null) ? touchB.booleanValue() : true;
+
+        traceVerbose("Verbose Mode");
+
+        System.out.println("Scenario: " + scenario);
+        System.out.println("Type: " + testType + testTypeFromScenario);
+        System.out.println("Number of Allocations: " + numAllocations + " (" + numAllocationsPerThread + " per Thread)" + numAllocationFromScenario);
+        System.out.println("Allocation Size: " + allocationSize + allocationSizeFromScenario);
+        System.out.println("Number of threads: " + numThreads);
+        System.out.println("Cycles: " + numCycles);
+        System.out.println("Touch: " + (touch ? "on" : "*OFF*"));
+        System.out.println("Size Shuffle factor: " + sizeShuffleFactor);
+        System.out.println("Free Shuffle factor: " + freeShuffleFactor);
+        System.out.println("Randomizer seed: " + randseed);
+        System.out.println("Alloc delay: " + alloc_delay);
+        System.out.println("Free delay: " + free_delay);
+
+        System.out.println("----");
 
         if (numAllocationsPerThread == 0) {
             System.err.println("not enough allocations to fill " + numThreads + " threads.");
             System.exit(-1);
         }
 
-        System.out.println("Type: " + testType);
-        System.out.println("Number of Allocations: " + numAllocations + " (" + numAllocationsPerThread + " per Thread)");
-        System.out.println("Allocation Size: " + allocationSize);
-        System.out.println("Size Shuffle factor: " + sizeShuffleFactor);
-        System.out.println("Free Shuffle factor: " + freeShuffleFactor);
-        System.out.println("Number of threads: " + numThreads);
-        System.out.println("Touch: " + !notouch);
-        System.out.println("Randomizer seed: " + randseed);
-        System.out.println("Alloc delay: " + alloc_delay);
-        System.out.println("Free delay: " + free_delay);
-
-        System.out.println("----");
         if (sizeShuffleFactor > 1.0 || sizeShuffleFactor < 0.0) {
             System.err.println("invalid size shuffle factor. Must be between 0.0 and 1.0.");
         } else {
@@ -273,8 +342,12 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                                 " +- " + humanReadable(dev) + ".");
         }
 
-        if (allocationSize < 16) {
+        if (allocationSize < 32) {
             System.out.println("Please be aware that with NMT enabled, overhead may be substantial");
+        }
+
+        if (!touch && allocationSize < 4096) {
+            System.out.println("Memory will not be touched. RSS may be smaller than expected.");
         }
 
         waitForKeyPress("Lets start?", 6);
@@ -293,14 +366,18 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         for (int cycle = 0; cycle < numCycles; cycle ++) {
             waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
+            long t1 = System.currentTimeMillis();
             barrier.await();
             barrier.await();
-            waitForKeyPress("Cycle " + cycle + ": allocation phase completed.", 0);
-            if (testType == TestType.peak) {
-                waitForKeyPress("Cycle " + cycle + ": before free...", 0);
+            long t2 = System.currentTimeMillis();
+            waitForKeyPress("Cycle " + cycle + ": allocation phase completed (" + (t2 - t1) + " ms).",4);
+            if (testType == TestType.peak || testType == TestType.partleak) {
+                waitForKeyPress("Cycle " + cycle + ": before free...", 4);
+                t1 = System.currentTimeMillis();
                 barrier.await();
                 barrier.await();
-                waitForKeyPress("Cycle " + cycle + ": free phase completed.", 0);
+                t2 = System.currentTimeMillis();
+                waitForKeyPress("Cycle " + cycle + ": free phase completed (" + (t2 - t1) + " ms).", 0);
             }
         }
 

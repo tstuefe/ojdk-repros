@@ -7,24 +7,39 @@
     "allPublicMethods" : true,
     "fields" : [
       { "name" : "alloc_delay" },
-      { "name" : "allocationSize" },
+      { "name" : "allocationSizeL" },
       { "name" : "auto_yes" },
       { "name" : "freeShuffleFactor" },
       { "name" : "free_delay" },
-      { "name" : "notouch" },
       { "name" : "nowait" },
-      { "name" : "numAllocations" },
+      { "name" : "numAllocationsL" },
       { "name" : "numCycles" },
       { "name" : "numThreads" },
       { "name" : "randseed" },
+      { "name" : "scenario" },
       { "name" : "sizeShuffleFactor" },
       { "name" : "testType" },
+      { "name" : "touchB" },
       { "name" : "verbose" },
       { "name" : "waitsecs" }
     ]
   },
   {
+    "name" : "de.stuefe.repros.AllocCHeap$Scenario",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
     "name" : "de.stuefe.repros.AllocCHeap$TestType",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "de.stuefe.repros.AllocCHeap.Scenario",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
@@ -55,8 +70,14 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
-      { "name" : "num_buffers" },
-      { "name" : "size_buffers" }
+      { "name" : "auto_yes" },
+      { "name" : "bufferSizeL" },
+      { "name" : "nowait" },
+      { "name" : "numBuffers" },
+      { "name" : "numCycles" },
+      { "name" : "touchB" },
+      { "name" : "verbose" },
+      { "name" : "waitsecs" }
     ]
   },
   {
@@ -322,6 +343,20 @@
       { "name" : "repeat_endlessly" },
       { "name" : "verbose" }
     ]
+  },
+  {
+    "name" : "java.lang.Boolean",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "java.lang.Long",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
   },
   {
     "name" : "java.util.Collections$UnmodifiableRandomAccessList",

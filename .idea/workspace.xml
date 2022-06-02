@@ -6,11 +6,28 @@
   <component name="ChangeListManager">
     <list default="true" id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros11/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/repros11/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros11/target/original-repros11-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros11/target/original-repros11-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros11/target/repros11-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros11/target/repros11-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros17/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/repros17/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros17/target/original-repros17-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros17/target/original-repros17-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros17/target/repros17-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros17/target/repros17-1.0.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/DBBTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/DBBTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/META-INF/native-image/picocli-generated/de.stuefe/repros8/reflect-config.json" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/META-INF/native-image/picocli-generated/de.stuefe/repros8/reflect-config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$AllocationWorker.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$AllocationWorker.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$Allocator.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$Allocator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$PointerArray.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$PointerArray.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$Scenario.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap$Scenario.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/AllocCHeap.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/target/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/target/original-repros8-1.0.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/target/repros8-1.0.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/DBBTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/classes/de/stuefe/repros/DBBTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/original-repros8-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/original-repros8-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/target/repros8-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/target/repros8-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros9/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/repros9/target/maven-archiver/pom.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros9/target/original-repros9-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros9/target/original-repros9-1.0.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros9/target/repros9-1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros9/target/repros9-1.0.jar" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -21,11 +38,20 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
   </component>
   <component name="ProjectId" id="27Jqp3cVwa0nT0ZPTbilkibw6QT" />
   <component name="ProjectViewState">
@@ -35,6 +61,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RecentsManager">

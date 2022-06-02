@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
         description = "Just burn cpu on a number of threads.")
 public class Burn implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--num-threads" },
+    @CommandLine.Option(names = { "--threads" },
             description = "Number of threads (default: ${DEFAULT-VALUE})")
     int numThreads = 1;
 
