@@ -89,19 +89,28 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
      */
     enum Scenario {
 
-        leak((int)MemorySize.M.value() * 64, 8, TestType.leak),
-        saw((int)MemorySize.M.value() * 64, 8, TestType.peak),
-        saw_rising((int)MemorySize.M.value() * 64, 8, TestType.partleak),
-        giants(8, MemorySize.M.value() * 64, TestType.leak),
-        saw_giants(8, MemorySize.M.value() * 64, TestType.peak)
+        leak("leaking, finegrained", (int)MemorySize.M.value() * 64, 8, TestType.leak),
+        saw("saw tooth, finegrained", (int)MemorySize.M.value() * 64, 8, TestType.peak),
+        rising_saw("saw tooth, finegrained, rising (partly leaking)", (int)MemorySize.M.value() * 64, 8, TestType.partleak),
+        coarse_leak("leaking, coarse grained", 8, MemorySize.M.value() * 64, TestType.leak),
+        coarse_saw("saw tooth, coarse grained",8, MemorySize.M.value() * 64, TestType.peak)
         ;
 
+        public final String description;
         public final int num;
         public final long size;
         public final TestType tt;
 
-        Scenario(int n, long sz, TestType tt) {
-            this.num = n; this.size = sz; this.tt = tt;
+        Scenario(String desc, int n, long sz, TestType tt) {
+            this.description = desc; this.num = n; this.size = sz; this.tt = tt;
+        }
+
+        static String describeAllValues() {
+            StringBuilder builder = new StringBuilder();
+            for (Scenario s : values()) {
+                builder.append(s.name() + "\t: " + s.description);
+            }
+            return builder.toString();
         }
     }
 
@@ -313,7 +322,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         traceVerbose("Verbose Mode");
 
-        System.out.println("Scenario: " + scenario);
+        System.out.println("Scenario: " + scenario + " (" + scenario.description + ")");
         System.out.println("Type: " + testType + testTypeFromScenario);
         System.out.println("Number of Allocations: " + numAllocations + " (" + numAllocationsPerThread + " per Thread)" + numAllocationFromScenario);
         System.out.println("Allocation Size: " + allocationSize + allocationSizeFromScenario);
