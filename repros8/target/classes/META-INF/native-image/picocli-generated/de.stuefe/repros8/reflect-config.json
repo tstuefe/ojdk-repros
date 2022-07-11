@@ -112,6 +112,7 @@
     "allPublicMethods" : true,
     "fields" : [
       { "name" : "auto_yes" },
+      { "name" : "gc_after_cycle" },
       { "name" : "nowait" },
       { "name" : "num_threads" },
       { "name" : "repeat" },
