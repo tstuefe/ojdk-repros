@@ -55,9 +55,9 @@ public class JustLoadAndLoad extends TestCaseBase implements Callable<Integer> {
         for (int i = 0; i < numLoaders; i++) {
 
             InMemoryClassLoader loader = new InMemoryClassLoader("loader" + i, null);
-            loaders.add(loader);
             try {
                 Class<?> clazz = Class.forName("my_generated_class", true, loader);
+                loaders.add(loader);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }

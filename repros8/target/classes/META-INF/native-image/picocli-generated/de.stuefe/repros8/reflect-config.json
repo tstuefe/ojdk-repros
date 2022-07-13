@@ -218,6 +218,20 @@
     ]
   },
   {
+    "name" : "de.stuefe.repros.metaspace.ContinuousLoadErrors",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true,
+    "fields" : [
+      { "name" : "auto_yes" },
+      { "name" : "keeploaders" },
+      { "name" : "nowait" },
+      { "name" : "numLoaders" },
+      { "name" : "verbose" }
+    ]
+  },
+  {
     "name" : "de.stuefe.repros.metaspace.InterleavedLoaders",
     "allDeclaredConstructors" : true,
     "allPublicConstructors" : true,
