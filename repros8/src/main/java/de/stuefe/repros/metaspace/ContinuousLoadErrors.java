@@ -7,7 +7,7 @@ import picocli.CommandLine;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-
+// Repro for JDK-8290225
 @CommandLine.Command(name = "ContinuousLoadErrors", mixinStandardHelpOptions = true,
         description = "ContinuousLoadErrors repro.")
 public class ContinuousLoadErrors extends TestCaseBase implements Callable<Integer> {
@@ -28,7 +28,7 @@ public class ContinuousLoadErrors extends TestCaseBase implements Callable<Integ
     boolean verbose;
 
     @CommandLine.Option(names = { "--num-loaders", "-n" }, description = "Number of loaders (default: $DEFAULT-VALUE)")
-    int numLoaders = 3000;
+    int numLoaders = 4096;
 
     @CommandLine.Option(names = { "--keep-loaders", "-k" }, description = "Prevent loaders from being GC'd")
     boolean keeploaders = false;
@@ -80,7 +80,7 @@ public class ContinuousLoadErrors extends TestCaseBase implements Callable<Integ
             if (!got_error) {
                 System.out.println("Did not get an error as expected?");
             }
-            if (i % 100 == 0) {
+            if (i % 1024 == 0) {
                 System.out.println(i + "...");
             }
         }
