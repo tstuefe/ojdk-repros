@@ -160,11 +160,13 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
     class Allocator {
         PointerArray pointers;
+        int numThreadLocalAllocations;
         Random rand;
 
         public Allocator(long seed, int localNumAllocations) {
+            numThreadLocalAllocations = localNumAllocations;
             if (testType != TestType.leak) {
-                pointers = new PointerArray(localNumAllocations);
+                pointers = new PointerArray(numThreadLocalAllocations);
             }
             rand = new Random(seed);
         }
@@ -191,7 +193,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         void allocateAll() {
             long allocated = 0;
-            for (int i = 0; i < numAllocations; i ++) {
+            for (int i = 0; i < numThreadLocalAllocations; i ++) {
                 long sz = randomized_allocation_size();
                 allocated += sz;
                 long p = theUnsafe.allocateMemory(sz);
@@ -213,14 +215,14 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         }
 
         void freeAll() {
-            for (int i = 0; i < numAllocations; i ++) {
+            for (int i = 0; i < numThreadLocalAllocations; i ++) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
             }
         }
         void freeSome() {
             // Only free some of the pointers (in this case, only every second)
-            for (int i = 0; i < numAllocations; i += 2) {
+            for (int i = 0; i < numThreadLocalAllocations; i += 2) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
             }
