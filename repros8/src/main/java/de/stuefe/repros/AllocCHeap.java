@@ -149,7 +149,6 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             values = new long[length];
         }
 
-        int getLength() { return length; }
         void set(int pos, long p) { values[pos] = p; }
         long getAndClear(int pos) { long p = values[pos]; values[pos] = 0; return p; }
 
@@ -164,7 +163,9 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         Random rand;
 
         public Allocator(long seed, int localNumAllocations) {
-            pointers = new PointerArray(localNumAllocations);
+            if (testType != TestType.leak) {
+                pointers = new PointerArray(localNumAllocations);
+            }
             rand = new Random(seed);
         }
 
@@ -190,14 +191,16 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
         void allocateAll() {
             long allocated = 0;
-            for (int i = 0; i < pointers.getLength(); i ++) {
+            for (int i = 0; i < numAllocations; i ++) {
                 long sz = randomized_allocation_size();
                 allocated += sz;
                 long p = theUnsafe.allocateMemory(sz);
                 if (touch) {
                     touchMemory(theUnsafe, p, sz);
                 }
-                pointers.set(i, p);
+                if (testType != TestType.leak) {
+                    pointers.set(i, p);
+                }
                 if ((i % 10000) == 0) {
                     sleep_delay(alloc_delay);
                 }
@@ -210,14 +213,14 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         }
 
         void freeAll() {
-            for (int i = 0; i < pointers.getLength(); i ++) {
+            for (int i = 0; i < numAllocations; i ++) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
             }
         }
         void freeSome() {
             // Only free some of the pointers (in this case, only every second)
-            for (int i = 0; i < pointers.getLength(); i += 2) {
+            for (int i = 0; i < numAllocations; i += 2) {
                 long p = pointers.getAndClear(i);
                 theUnsafe.freeMemory(p);
             }
@@ -253,10 +256,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                     traceVerbose("Worker " + threadNum + " enters allocation phase.");
                     allocator.allocateAll();
                     traceVerbose("Worker " + threadNum + " finished allocation phase.");
-                    allocator.shuffleAllocations();
-                    traceVerbose("Worker " + threadNum + " finished shuffling.");
                     barrier.await();
-                    if (testType == TestType.peak || testType == TestType.partleak) {
+                    if (testType != TestType.leak) {
+                        allocator.shuffleAllocations();
+                        traceVerbose("Worker " + threadNum + " finished shuffling.");
                         barrier.await();
                         traceVerbose("Worker " + threadNum + " enters free phase.");
                         if (testType == TestType.peak) {
@@ -377,13 +380,15 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
             long t1 = System.currentTimeMillis();
             barrier.await();
+            System.out.println("Cycle " + cycle + ": allocating...");
             barrier.await();
             long t2 = System.currentTimeMillis();
             waitForKeyPress("Cycle " + cycle + ": allocation phase completed (" + (t2 - t1) + " ms).",4);
-            if (testType == TestType.peak || testType == TestType.partleak) {
+            if (testType != TestType.leak) {
                 waitForKeyPress("Cycle " + cycle + ": before free...", 4);
                 t1 = System.currentTimeMillis();
                 barrier.await();
+                System.out.println("Cycle " + cycle + ": freeing...");
                 barrier.await();
                 t2 = System.currentTimeMillis();
                 waitForKeyPress("Cycle " + cycle + ": free phase completed (" + (t2 - t1) + " ms).", 0);
