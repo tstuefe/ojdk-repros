@@ -32,32 +32,42 @@ public class JustLoadAndLoad extends TestCaseBase implements Callable<Integer> {
         System.exit(exitCode);
     }
 
-    @CommandLine.Option(names = { "--num-loaders" }, defaultValue = "3000")
-    int numLoaders;
+    @CommandLine.Option(names = { "--num-classes", "-C" }, description = "Number of classes (default: ${DEFAULT_VALUE})")
+    int numClasses=3000;
 
+    @CommandLine.Option(names = { "--num-loaders", "-L" }, description = "Number of classes (default: ${DEFAULT_VALUE})")
+    int numLoaders=1;
 
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
-        System.out.print("Generate classes...");
-        Utils.createRandomClass("my_generated_class", 100);
+        System.out.print("Generate " + numClasses + " classes...");
+        for (int i = 0; i < numClasses; i ++) {
+            Utils.createRandomClass("my_generated_class" + i, 1);
+            if ((i % 1000) == 0) {
+                System.out.print("*");
+            }
+        }
+        System.out.println();
 
         System.gc();
         if (!nowait) {
             MiscUtils.waitForKeyPress();
         }
 
-        System.out.print("Loading into " + numLoaders + "loaders...");
+        System.out.print("Loading " + numClasses + " into " + numLoaders + "loaders...");
 
-        ArrayList<ClassLoader> loaders = new ArrayList<>();
+        ClassLoader[] loaders = new ClassLoader[numLoaders];
 
         for (int i = 0; i < numLoaders; i++) {
 
             InMemoryClassLoader loader = new InMemoryClassLoader("loader" + i, null);
             try {
-                Class<?> clazz = Class.forName("my_generated_class", true, loader);
-                loaders.add(loader);
+                for (int j = 0; j < numClasses; j++) {
+                    Class<?> clazz = Class.forName("my_generated_class" + j, true, loader);
+                }
+                loaders[i] = loader;
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }

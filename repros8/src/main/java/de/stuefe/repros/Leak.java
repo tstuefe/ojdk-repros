@@ -2,46 +2,51 @@ package de.stuefe.repros;
 
 import picocli.CommandLine;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 
-@CommandLine.Command(name = "Burn", mixinStandardHelpOptions = true,
-        description = "Just burn cpu on a number of threads.")
-public class Burn implements Callable<Integer> {
+@CommandLine.Command(name = "Leak", mixinStandardHelpOptions = true)
+public class Leak implements Callable<Integer> {
 
     @CommandLine.Option(names = { "-T", "--threads" },
             description = "Number of threads (default: ${DEFAULT-VALUE})")
     int numThreads = 1;
 
+    @CommandLine.Option(names = { "-N", "--objects" },
+            description = "Number of objects (default: ${DEFAULT-VALUE})")
+    int objects = 10000;
+
     @CommandLine.Option(names = { "-t", "--time" },
-            description = "Burn time in seconds (default: ${DEFAULT-VALUE})")
+            description = "Time in seconds (default: ${DEFAULT-VALUE})")
     int seconds = 10;
 
-    volatile static long l = 0;
     volatile static boolean stop = false;
 
-    public static long fibonacci(int n) {
-        if (n <= 1) {
-            return n;
-        }
-        return fibonacci(n-1) + fibonacci(n-2);
-    }
-
     public static void main(String... args) {
-        int exitCode = new CommandLine(new Burn()).execute(args);
+        int exitCode = new CommandLine(new Leak()).execute(args);
         System.exit(exitCode);
     }
 
     @Override
     public Integer call() throws Exception {
+        System.out.println("Threads: " + numThreads);
+        System.out.println("Objects: " + objects);
+        System.out.println("Time: " + seconds + " secs");
 
-        System.out.println("Burning on " + numThreads + " threads for " + seconds + " seconds.");
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                while (Burn.stop == false) {
-                    Burn.l = Burn.fibonacci(20);
+                long i = 0;
+                ArrayList<String> a = new ArrayList();
+                while (Leak.stop == false) {
+                    a.add("iii" + i);
+                    i++;
+                    if ((i % 100000) == 0) {
+                        a = new ArrayList<>();
+                    }
                 }
+                System.out.println(i);
             }
         };
 

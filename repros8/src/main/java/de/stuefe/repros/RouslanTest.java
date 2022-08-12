@@ -6,6 +6,8 @@ public class RouslanTest {
     private static int count = 0;
     public static void main(String[] argv){
         for(;;){
+            long[]  a = new long[-1];
+            System.out.println(a.length);
             new Thread(new Runnable(){
                 public void run(){
 /*                    synchronized(s){
