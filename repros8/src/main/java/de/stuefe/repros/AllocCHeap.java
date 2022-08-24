@@ -379,7 +379,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         }
 
         for (int cycle = 0; cycle < numCycles; cycle ++) {
-            waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
+            waitForKeyPress("Cycle " + cycle + ": before allocation...", 4);
             long t1 = System.currentTimeMillis();
             barrier.await();
             System.out.println("Cycle " + cycle + ": allocating...");
@@ -395,6 +395,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                 t2 = System.currentTimeMillis();
                 waitForKeyPress("Cycle " + cycle + ": free phase completed (" + (t2 - t1) + " ms).", 0);
             }
+            waitForKeyPress("Cycle " + cycle + ": ended.", waitsecs);
         }
 
         waitForKeyPress("Done.");

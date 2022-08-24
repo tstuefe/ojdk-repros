@@ -5,12 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/Leak.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/Peak.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/Burn.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/Burn.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/RouslanTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/RouslanTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/metaspace/JustLoadAndLoad.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/metaspace/JustLoadAndLoad.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/DBBTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/DBBTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
