@@ -57,7 +57,10 @@ public class ClassLifeCycle extends TestCaseBase implements Callable<Integer> {
 
         waitForKeyPress("Before creating loader...");
 
-        ClassLoader loader = new InMemoryClassLoader("myloader", null);
+        ClassLoader loader_parent = new InMemoryClassLoader("parent-myloader", null);
+        ClassLoader loader_parent2 = new InMemoryClassLoader("parent-myloader", loader_parent);
+
+        ClassLoader loader = new InMemoryClassLoader("myloader", loader_parent2);
 
         waitForKeyPress("Before loading...");
 

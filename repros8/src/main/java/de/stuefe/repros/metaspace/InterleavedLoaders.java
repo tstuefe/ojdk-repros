@@ -6,6 +6,8 @@ import picocli.CommandLine;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -100,6 +102,10 @@ public class InterleavedLoaders implements Callable<Integer> {
             description = "Factor to increase or decrease standard times in unattended mode (0.1 .. 10.0f).")
     float timefactor;
 
+    @CommandLine.Option(names = { "--intantiate", "-I" }, defaultValue = "false",
+            description = "Factor to increase or decrease standard times in unattended mode (0.1 .. 10.0f).")
+    boolean intantiate;
+
     void waitForKeyPress(String message, int secs) {
         secs = (int)(timefactor * (float)secs);
         secs = Integer.max(0, secs);
@@ -133,6 +139,7 @@ public class InterleavedLoaders implements Callable<Integer> {
     }
 
     LoaderInfo[] loaders;
+    List<Object> objects;
 
     boolean fullyLoaded() {
         for (int n = 0; n < loaders.length; n ++) {
@@ -166,6 +173,9 @@ public class InterleavedLoaders implements Callable<Integer> {
                     String classname = nameClass(loaded + nclass);
                     Class<?> clazz = Class.forName(classname, true, loaders[loader].cl);
                     loaders[loader].loaded_classes.add(clazz);
+                    if (intantiate) {
+                        objects.add(Utils.instantiateGeneratedClass(clazz));
+                    }
                 }
             }
             if (time_raise > 0) {
@@ -206,6 +216,7 @@ public class InterleavedLoaders implements Callable<Integer> {
         repeat_cycles = Integer.min(100, repeat_cycles);
 
         loaders = new LoaderInfo[num_loaders_per_generation * num_generations];
+        objects = new ArrayList<>();
 
         System.out.println("Loader gens: " + num_generations + ".");
         System.out.println("Loaders per gen: " + num_loaders_per_generation + ".");
@@ -215,6 +226,7 @@ public class InterleavedLoaders implements Callable<Integer> {
         System.out.println("Wiggle factor: " + wiggle + ".");
         System.out.println("Time factor: " + timefactor + ".");
         System.out.println("Repeat cycles: " + repeat_cycles + ".");
+        System.out.println("Will instantiate: " + intantiate + ".");
 
         waitForKeyPress("Generate " + num_classes_per_loader + " classes...", 0);
 

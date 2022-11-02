@@ -9,9 +9,13 @@ import java.util.concurrent.Callable;
      description = "MultiThreadTest repro.")
 public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--num-threads", "-T" }, defaultValue = "1000",
-            description = "Number of threads.")
-    int num_threads;
+    @CommandLine.Option(names = { "--num-threads", "-T" },
+            description = "Number of threads (default: ${DEFAULT-VALUE}).")
+    int num_threads = 1000;
+
+    @CommandLine.Option(names = { "--stack-depth", "-D" },
+            description = "Stack Depth (default: ${DEFAULT-VALUE}).")
+    int stackDepth = 100;
 
     @CommandLine.Option(names = { "--wait-time", "-w" }, defaultValue = "10",
             description = "Seconds each thread is alive.")
@@ -43,11 +47,26 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         System.exit(exitCode);
     }
 
+    long do_recursively(int depth) {
+        // Note: prevent tco
+        if (depth == stackDepth) {
+            return 0;
+        }
+        long l = do_recursively(depth + 1);
+        if (l % 2 == 0) {
+            l = l + System.currentTimeMillis();
+        }
+        return l;
+    }
+
+    long l = 0;
+    volatile boolean stop = false;
     class Sleeper extends Thread {
         @Override
         public void run() {
             try {
-                Thread.sleep(secs * 1000);
+                l += do_recursively(0);
+                while (!stop) Thread.sleep(secs * 1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -60,6 +79,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         System.out.println("Number of threads: " + num_threads);
         System.out.println("Wait time: " + secs);
         System.out.println("Repeat count: " + repeat);
+        System.out.println("Stack depth: " + stackDepth);
         System.out.println("GC after Cycle: " + gc_after_cycle);
 
         for (int cycle = 0; cycle < repeat; cycle ++) {
@@ -84,6 +104,10 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
                 waitForKeyPress("After: " + created + " threads.");
                 waitForKeyPress();
             }
+
+            waitForKeyPress("Before stopping...");
+
+            stop = true;
 
             waitForKeyPress("Before joining...");
 

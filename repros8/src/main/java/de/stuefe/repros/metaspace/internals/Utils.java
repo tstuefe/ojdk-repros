@@ -1,6 +1,8 @@
 package de.stuefe.repros.metaspace.internals;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 
 public class Utils {
@@ -44,6 +46,16 @@ public class Utils {
         String code = Utils.makeRandomSource(sizeFactorFluctuated).replaceAll("CLASSNAME", classname);
         boolean success = InMemoryJavaFileManager.theFileManager().compileSingleFile(classname, code);
         assert(success);
+    }
+
+    static public Object instantiateGeneratedClass(Class theClass) {
+        try {
+            Constructor ctr = theClass.getConstructor(new Class[]{});
+            return ctr.newInstance();
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     static public void createClassFromSource(String classname, String source) {

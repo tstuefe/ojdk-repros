@@ -48,6 +48,8 @@ public class Peak extends TestCaseBase implements Callable<Integer> {
         System.exit(exitCode);
     }
 
+    byte[][] arr;
+
     @Override
     public Integer call() throws Exception {
 
@@ -58,19 +60,26 @@ public class Peak extends TestCaseBase implements Callable<Integer> {
         System.out.println("Cycles: " + numCycles);
         System.out.println("GC?: " + explicit_gc);
 
+        System.out.println("Estimated heap usage (64-bit VM): " +
+                ((long)numAllocations * 8 + // base array
+                 (long)numAllocations * (16 + size)) // secondary arrays, including headers
+                        / (long)(1024 * 1024) + "MB.");
+
         for (int cycle = 0; cycle < numCycles; cycle++) {
             waitForKeyPress("Cycle " + cycle + ": before allocation...", waitsecs);
-            byte[][] arr = new byte[numAllocations][];
-            for (int n = 0; n < numAllocations; n ++) {
-                arr[n] = new byte[size];
+            try {
+                arr = new byte[numAllocations][];
+                for (int n = 0; n < numAllocations; n++) {
+                    arr[n] = new byte[size];
+                }
+                waitForKeyPress("Cycle " + cycle + ": after allocation, before release...", waitsecs);
+            } finally {
+                arr = null;
             }
-            waitForKeyPress("Cycle " + cycle + ": after allocation, before release...", waitsecs);
-            arr = null;
             if (explicit_gc) {
-                System.gc();
+                waitForKeyPress("Cycle " + cycle + ": after release, before GC...", waitsecs);
                 System.gc();
             }
-            waitForKeyPress("Cycle " + cycle + ": after release...", waitsecs);
         }
 
         waitForKeyPress("Finished.", waitsecs);

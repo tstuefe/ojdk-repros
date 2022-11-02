@@ -112,6 +112,8 @@ public class SimpleLambda2 extends TestCaseBase implements Callable<Integer> {
 			j+= countPersonWithPredicate(list, person -> person.yearly_income < 9999);
 			j+= countPersonWithPredicate(list, person -> person.yearly_income < 9998);
 			j+= countPersonWithPredicate(list, person -> person.yearly_income < 9997);
+
+
 			System.out.println("Poor:" + j);
 
 			waitForKeyPress();
