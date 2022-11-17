@@ -5,7 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiInflate.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/SmallArray.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
     </list>
