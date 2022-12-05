@@ -3,7 +3,9 @@ package de.stuefe.repros;
 import picocli.CommandLine;
 
 import javax.rmi.ssl.SslRMIClientSocketFactory;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CyclicBarrier;
 
 @CommandLine.Command(name = "MultiThreadTest", mixinStandardHelpOptions = true,
      description = "MultiThreadTest repro.")
@@ -60,14 +62,25 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
     }
 
     long l = 0;
-    volatile boolean stop = false;
+
     class Sleeper extends Thread {
+        CyclicBarrier barrier;
+        int no;
+        public Sleeper(CyclicBarrier barrier, int no) {
+            this.barrier = barrier;
+            this.no = no;
+        }
         @Override
         public void run() {
             try {
+                barrier.await(); // 1
                 l += do_recursively(0);
-                while (!stop) Thread.sleep(secs * 1000);
+                barrier.await(); // 2
+                // main thread sleeps
+                barrier.await(); // 3
             } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (BrokenBarrierException e) {
                 e.printStackTrace();
             }
         }
@@ -88,13 +101,13 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             waitForKeyPress("Will start " + num_threads + " threads, wait time " + secs + "s...");
 
             Thread[] sleepers = new Thread[num_threads];
+            CyclicBarrier barrier = new CyclicBarrier(num_threads + 1);
             int created = 0;
             try {
-                for (int i = 0; i < num_threads; i++) {
-                    sleepers[i] = new Sleeper();
-                    // sleepers[i] = new Thread(() -> {});
+                for (int i = 0; i < num_threads; i ++) {
+                    sleepers[i] = new Sleeper(barrier, i);
                     sleepers[i].start();
-                    created++;
+                    created ++;
                     if (created % (num_threads / 10) == 0) {
                         System.out.println("Created: " + created + "...");
                     }
@@ -105,9 +118,21 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
                 waitForKeyPress();
             }
 
-            waitForKeyPress("Before stopping...");
+            waitForKeyPress("All threads up, waiting to start work...");
 
-            stop = true;
+            barrier.await(); // 1
+
+            // threads work
+
+            barrier.await(); // 2
+
+            waitForKeyPress("All work ended. Before sleeping...");
+
+            Thread.sleep(secs * 1000);
+
+            waitForKeyPress("Will stop threads...");
+
+            barrier.await(); // 3
 
             waitForKeyPress("Before joining...");
 
@@ -126,9 +151,8 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
 
             waitForKeyPress("After joining, before GC...");
 
-            for (int i = 0; i < num_threads; i++) {
-                sleepers[i] = null;
-            }
+            sleepers = null;
+
             if (gc_after_cycle) {
                 System.gc();
                 System.gc();

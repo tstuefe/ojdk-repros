@@ -3,6 +3,7 @@ package de.stuefe.repros;
 import picocli.CommandLine;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -26,9 +27,15 @@ public class MultiInflate implements Callable<Integer> {
             description = "Burn time in seconds (default: ${DEFAULT-VALUE})")
     int seconds = 10;
 
+    @CommandLine.Option(names = { "-l", "--leak" },
+            description = "Leak deflaters (default: ${DEFAULT-VALUE})")
+    boolean leak = false;
+
     volatile static boolean stop = false;
 
-    static class TestThread extends Thread {
+    public static ArrayList<Object> leakage = new ArrayList<>();
+
+    class TestThread extends Thread {
         public int runs = 0;
         private void do_it() throws UnsupportedEncodingException, DataFormatException {
             String message = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
@@ -41,17 +48,26 @@ public class MultiInflate implements Callable<Integer> {
             byte[] output = new byte[1024];
 
             Deflater deflater = new Deflater();
-
+            if (leak) {
+                leakage.add(deflater);
+            }
             deflater.setInput(input);
             deflater.finish();
             int compressedDataLength = deflater.deflate(output);
-            deflater.end();
+            if (!leak) {
+                deflater.end();
+            }
 
             Inflater inflater = new Inflater();
+            if (leak) {
+                leakage.add(inflater);
+            }
             inflater.setInput(output, 0, compressedDataLength);
             byte[] result = new byte[1024];
             int resultLength = inflater.inflate(result);
-            inflater.end();
+            if (!leak) {
+                inflater.end();
+            }
         }
 
         @Override
@@ -72,7 +88,7 @@ public class MultiInflate implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
 
-        System.out.println("Running on " + numThreads + " threads for " + seconds + " seconds.");
+        System.out.println("Running on " + numThreads + " threads for " + seconds + " seconds, leak=" + leak + ".");
 
         TestThread[] ts = new TestThread[numThreads];
 
