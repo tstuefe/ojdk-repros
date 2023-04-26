@@ -16,72 +16,72 @@ import java.util.concurrent.CyclicBarrier;
 public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
 
     @CommandLine.Option(names = { "--scenario", "-S" },
-            description = "Scenario (valid values: ${COMPLETION-CANDIDATES}, default: ${DEFAULT-VALUE}).")
-    Scenario scenario = Scenario.leak;
+            description = "Scenario (valid values: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}.")
+    Scenario scenario = Scenario.saw;
 
     @CommandLine.Option(names = { "--num", "-n" }, converter = MemorySizeConverter.class,
-            description = "Number of allocations. Accepts g, m, k suffixes.")
+            description = "Number of allocations. Accepts g, m, k suffixes. Default: ${DEFAULT-VALUE}.")
     Long numAllocationsL = null;
     int numAllocations = -1;
     int numAllocationsPerThread = -1;
 
     @CommandLine.Option(names = { "--size", "-s" }, converter = MemorySizeConverter.class,
-            description = "Allocation size. Accepts g, m, k suffixes.")
+            description = "Allocation size. Accepts g, m, k suffixes. Default: ${DEFAULT-VALUE}.")
     Long allocationSizeL = null;
     long allocationSize = -1;
 
     enum TestType { peak, leak, partleak };
     @CommandLine.Option(names = { "--type", "-t" },
-            description = "Valid values: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+            description = "Valid values: ${COMPLETION-CANDIDATES}. Default: ${DEFAULT-VALUE}.")
     TestType testType = null;
 
     @CommandLine.Option(names = { "--touch" }, negatable = true,
-            description = "Touch allocated memory (default: true).")
+            description = "Touch allocated memory. Default: ${DEFAULT-VALUE}.")
     Boolean touchB = null;
     boolean touch = false;
 
     @CommandLine.Option(names = { "--allocdelay" },
-            description = "Delay, in about 0.1 ns, between subsequent mallocs (default: ${DEFAULT-VALUE}).")
+            description = "Delay, in about 0.1 ns, between subsequent mallocs. Default: ${DEFAULT-VALUE}.")
     int alloc_delay = 0;
 
     @CommandLine.Option(names = { "--freedelay" },
-            description = "Delay, in about 0.1 ns, between subsequent frees (default: ${DEFAULT-VALUE}).")
+            description = "Delay, in about 0.1 ns, between subsequent frees. Default: ${DEFAULT-VALUE}.")
     int free_delay = 0;
 
     @CommandLine.Option(names = { "--free-shuffle-factor" },
-            description = "If --type is peak, randomize free order between 1.0 (very random) and 0.0 (in order of allocation). (default: ${DEFAULT-VALUE})")
+            description = "If --type is peak, randomize free order between 1.0 (very random) and 0.0 (in order of allocation). Default: ${DEFAULT-VALUE}.")
     double freeShuffleFactor = 0.0;
 
     @CommandLine.Option(names = { "--size-shuffle-factor" },
-            description = "Randomize allocation size (--size) by size +- (size * factor). Valid values are 0.0 - 1.0. (default: ${DEFAULT-VALUE})")
+            description = "Randomize allocation size (--size) by size +- (size * factor). Valid values are 0.0 - 1.0. Default: ${DEFAULT-VALUE}.")
     double sizeShuffleFactor = 0.0;
 
     @CommandLine.Option(names = { "--threads", "-T" },
-            description = "Number of allocation threads (default: ${DEFAULT-VALUE})")
+            description = "Number of allocation threads. Default: ${DEFAULT-VALUE}.")
     int numThreads = 1;
 
     @CommandLine.Option(names = { "--cycles", "-c" },
-            description = "Number of repeats (default: ${DEFAULT-VALUE})")
+            description = "Number of repeats. Default: ${DEFAULT-VALUE}.")
     int numCycles = 5;
 
     @CommandLine.Option(names = { "--randseed" },
-            description = "If not 0, fixed randomizer seed (default: ${DEFAULT-VALUE}).")
+            description = "If not 0, fixed randomizer seed. Default: ${DEFAULT-VALUE}.")
     long randseed = 0;
 
     @CommandLine.Option(names = { "--auto-yes", "-y" },
-            description = "Autoyes.")
+            description = "Autoyes. Default: ${DEFAULT-VALUE}.")
     boolean auto_yes = false;
 
     @CommandLine.Option(names = { "--waitsecs" },
-            description = "If autoyes, how many seconds to wait per step (default: ${DEFAULT-VALUE}).")
+            description = "If autoyes, how many seconds to wait per step. Default: ${DEFAULT-VALUE}.")
     int waitsecs = 0;
 
     @CommandLine.Option(names = { "--nowait" },
-            description = "do not wait (only with autoyes).")
+            description = "do not wait (only with autoyes). Default: ${DEFAULT-VALUE}.")
     boolean nowait = false;
 
     @CommandLine.Option(names = { "--verbose", "-v" },
-            description = "verbose mode.")
+            description = "verbose mode. Default: ${DEFAULT-VALUE}.")
     boolean verbose = false;
 
     /**
@@ -89,8 +89,9 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
      */
     enum Scenario {
 
-        leak("leaking, finegrained", (int)MemorySize.M.value() * 64, 8, TestType.leak),
-        saw("saw tooth, finegrained", (int)MemorySize.M.value() * 64, 8, TestType.peak),
+        leak("leaking, fine-granular allocation", (int)MemorySize.M.value() * 64, 8, TestType.leak),
+        saw("saw tooth, fine-granular allocation", (int)MemorySize.M.value() * 64, 8, TestType.peak),
+        littlesaw("saw tooth, small teeth, fine-granular allocation", (int)MemorySize.M.value() * 16, 8, TestType.peak),
         rising_saw("saw tooth, finegrained, rising (partly leaking)", (int)MemorySize.M.value() * 64, 8, TestType.partleak),
         coarse_leak("leaking, coarse grained", 8, MemorySize.M.value() * 64, TestType.leak),
         coarse_saw("saw tooth, coarse grained",8, MemorySize.M.value() * 64, TestType.peak)

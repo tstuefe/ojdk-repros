@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9f8957e6-de31-4fd6-ace8-4ad593b6b010" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/LargeArray.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/metaspace/VolkersLambdaLeak.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiInflate.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiInflate.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiThreadTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiThreadTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,6 +35,8 @@
     </file-type-list>
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$PROJECT_DIR$/../../jdks/sapmachine17/lib/src.zip!/java.base/java/lang/Integer.java" root0="SKIP_INSPECTION" />
+    <setting file="jar://$PROJECT_DIR$/../../jdks/sapmachine17/lib/src.zip!/java.base/java/lang/ClassLoader.java" root0="SKIP_INSPECTION" />
     <setting file="file://$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/AllocCHeap.java" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="27Jqp3cVwa0nT0ZPTbilkibw6QT" />
