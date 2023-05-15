@@ -35,15 +35,17 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
         int i;
     }
 
+    public volatile Object[] o;
+
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
         waitForKeyPress("Will create " + num_objects + " nearly empty objects...");
 
-        Object[] ar = new Object[num_objects];
+        o = new Object[num_objects];
 
         for (int i = 0; i < num_objects; i ++) {
-            ar[i] = new D();
+            o[i] = new byte[i % 33];
         }
 
         waitForKeyPress("Done.");

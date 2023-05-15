@@ -18,7 +18,7 @@ public class SimpleSpawn {
             cmd[i] = args[i];
         }
 
-        for (int i = 0; i < 5; i ++) {
+        for (int i = 0; i < 1; i ++) {
             Process p = Runtime.getRuntime().exec(cmd);
 
             System.out.println("Process started.");
