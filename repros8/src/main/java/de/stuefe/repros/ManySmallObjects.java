@@ -9,9 +9,13 @@ import java.util.concurrent.Callable;
      description = "ManySmallObjects repro.")
 public class ManySmallObjects extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--num-objects" },
-            description = "Number of threads (default: ${DEFAULT-VALUE})\").")
+    @CommandLine.Option(names = { "--num", "-n" },
+            description = "Number of objects (default: ${DEFAULT-VALUE}).")
     int num_objects = 1024 * 1024 * 256;
+
+    @CommandLine.Option(names = { "--size", "-s" },
+            description = "Size of objects (-1 means Object, 0 means zero-leght byte array etc) (default: ${DEFAULT-VALUE}).")
+    int size_objects = -1;
 
     @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
             description = "Autoyes.")
@@ -21,6 +25,10 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
     @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
             description = "do not wait (only with autoyes).")
     boolean nowait;
+
+    @CommandLine.Option(names = { "--gc" },
+            description = "do a gc at the end (default: ${DEFAULT-VALUE})@")
+    boolean gc;
 
     @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
             description = "Verbose.")
@@ -45,7 +53,12 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
         o = new Object[num_objects];
 
         for (int i = 0; i < num_objects; i ++) {
-            o[i] = new byte[i % 33];
+            o[i] = size_objects == -1 ? new Object() : new byte[size_objects];
+        }
+
+        if (gc) {
+            waitForKeyPress("Before gc.");
+            System.gc();
         }
 
         waitForKeyPress("Done.");

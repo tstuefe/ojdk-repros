@@ -8,7 +8,7 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros.jar" beforeDir="false" afterPath="$PROJECT_DIR$/repros.jar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/ManySmallObjects.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/ManySmallObjects.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/process/SimpleSpawn.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/process/SimpleSpawn.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiThreadTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/repros8/src/main/java/de/stuefe/repros/MultiThreadTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

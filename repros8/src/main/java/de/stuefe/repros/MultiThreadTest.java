@@ -103,6 +103,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             Thread[] sleepers = new Thread[num_threads];
             CyclicBarrier barrier = new CyclicBarrier(num_threads + 1);
             int created = 0;
+            long t1 = System.currentTimeMillis();
             try {
                 for (int i = 0; i < num_threads; i ++) {
                     sleepers[i] = new Sleeper(barrier, i);
@@ -118,9 +119,13 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
                 waitForKeyPress();
             }
 
-            waitForKeyPress("All threads up, waiting to start work...");
-
             barrier.await(); // 1
+
+            long t2 = System.currentTimeMillis();
+
+            System.out.println("All Threads Started, " + (t2 - t1) + "ms");
+
+            waitForKeyPress("Waiting to start work...");
 
             // threads work
 
