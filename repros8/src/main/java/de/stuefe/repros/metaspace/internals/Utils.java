@@ -3,6 +3,7 @@ package de.stuefe.repros.metaspace.internals;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Random;
 
 public class Utils {
@@ -51,6 +52,8 @@ public class Utils {
     static public Object instantiateGeneratedClass(Class theClass) {
         try {
             Constructor ctr = theClass.getConstructor(new Class[]{});
+            Method m = theClass.getMethod("get_ss0");
+            m.invoke(null);
             return ctr.newInstance();
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
@@ -93,6 +96,7 @@ public class Utils {
             bld.append("public int get_i" + i + "() { return i" + i + "; }\n");
             bld.append("public String get_s" + i + "() { return s" + i + "; }\n");
             bld.append("public byte[] get_b" + i + "() { return b" + i + "; }\n");
+            bld.append("public static String get_ss" + i + "() { return \"allo" + i + "\"; }\n");
         }
         bld.append("};");
         return bld.toString();
