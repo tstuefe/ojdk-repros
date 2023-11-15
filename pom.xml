@@ -12,6 +12,7 @@
         <module>repros9</module>
         <module>repros11</module>
         <module>repros17</module>
+        <module>repros21</module>
     </modules>
     <packaging>pom</packaging>
 
