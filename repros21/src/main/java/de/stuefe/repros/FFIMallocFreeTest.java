@@ -1,5 +1,6 @@
 package de.stuefe.repros;
 
+import de.stuefe.repros.util.MemorySizeConverter;
 import picocli.CommandLine;
 
 import java.lang.foreign.*;
@@ -26,6 +27,16 @@ public class FFIMallocFreeTest extends TestCaseBase implements Callable<Integer>
             description = "Verbose.")
     boolean verbose;
 
+    @CommandLine.Option(names = { "--num", "-n" }, converter = MemorySizeConverter.class,
+            description = "Number of allocations. Accepts g, m, k suffixes. Default: ${DEFAULT-VALUE}.")
+    Long numAllocationsL = null;
+    int numAllocations = -1;
+
+    @CommandLine.Option(names = { "--size", "-s" }, converter = MemorySizeConverter.class,
+            description = "Allocation size. Accepts g, m, k suffixes. Default: ${DEFAULT-VALUE}.")
+    Long allocationSizeL = null;
+    long allocationSize = -1;
+
     public static void main(String... args) {
         int exitCode = new CommandLine(new FFIMallocFreeTest()).execute(args);
         System.exit(exitCode);
@@ -48,11 +59,14 @@ public class FFIMallocFreeTest extends TestCaseBase implements Callable<Integer>
     @Override
     public Integer call() throws Exception {
 
+        allocationSize = allocationSizeL == null ? 1024 : allocationSizeL.longValue();
+        numAllocations = numAllocationsL == null ? 1024 : numAllocationsL.intValue();
+        System.out.println("num: " + numAllocations + ", size " + allocationSize + ", expected net footprint " + (allocationSize * numAllocations));
         initialize(verbose, auto_yes, nowait);
 
         try {
-            for (int i = 0; i < 1000; i++) {
-                invokeMalloc(1024 * 3);
+            for (int i = 0; i < numAllocations; i++) {
+                invokeMalloc(allocationSize);
             }
         } catch (Throwable e) {
             throw new RuntimeException(e);

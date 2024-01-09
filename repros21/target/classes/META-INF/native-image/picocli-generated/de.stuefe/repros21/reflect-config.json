@@ -19,8 +19,10 @@
     "allDeclaredMethods" : true,
     "allPublicMethods" : true,
     "fields" : [
+      { "name" : "allocationSizeL" },
       { "name" : "auto_yes" },
       { "name" : "nowait" },
+      { "name" : "numAllocationsL" },
       { "name" : "verbose" },
       { "name" : "waitsecs" }
     ]
@@ -37,6 +39,13 @@
       { "name" : "verbose" },
       { "name" : "waitsecs" }
     ]
+  },
+  {
+    "name" : "java.lang.Long",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
   },
   {
     "name" : "picocli.CommandLine$AutoHelpMixin",

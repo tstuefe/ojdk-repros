@@ -63,7 +63,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="repros11" options="-Aproject=de.stuefe/repros11" />
       <module name="repros17" options="-Aproject=de.stuefe/repros17" />
-      <module name="repros21" options="-Aproject=de.stuefe/repros21" />
+      <module name="repros21" options="-Aproject=de.stuefe/repros21 --enable-preview" />
       <module name="repros8" options="-Aproject=de.stuefe/repros8" />
       <module name="repros9" options="-Aproject=de.stuefe/repros9" />
     </option>

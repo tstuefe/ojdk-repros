@@ -9,12 +9,16 @@ import java.util.concurrent.Callable;
      description = "ManySmallObjects repro.")
 public class ManySmallObjects extends TestCaseBase implements Callable<Integer> {
 
+    class TestObject {
+        public Object next;
+    };
+
     @CommandLine.Option(names = { "--num", "-n" },
             description = "Number of objects (default: ${DEFAULT-VALUE}).")
     int num_objects = 1024 * 1024 * 256;
 
     @CommandLine.Option(names = { "--size", "-s" },
-            description = "Size of objects (-1 means Object, 0 means zero-leght byte array etc) (default: ${DEFAULT-VALUE}).")
+            description = "Size of objects (-2 means test object with one embedded oop, -1 means Object, 0 means zero-leght byte array etc) (default: ${DEFAULT-VALUE}).")
     int size_objects = -1;
 
     @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
@@ -43,18 +47,34 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
         int i;
     }
 
-    public volatile Object[] o;
+    public volatile Object[] oa;
 
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
         waitForKeyPress("Will create " + num_objects + " nearly empty objects...");
 
-        o = new Object[num_objects];
+        oa = new Object[num_objects];
 
         for (int i = 0; i < num_objects; i ++) {
-            o[i] = size_objects == -1 ? new Object() : new byte[size_objects];
+            Object o; TestObject last_o = null;
+            switch (size_objects) {
+                case -2: o = new TestObject();
+                if (last_o != null) last_o.next = o;
+                last_o = (TestObject)o;
+                break;
+                case -1:
+                o = new Object();
+                break;
+                default:
+                o = new byte[size_objects];
+            }
+            oa[i] = o;
         }
+
+        waitForKeyPress("Befire release.");
+
+        oa = null;
 
         if (gc) {
             waitForKeyPress("Before gc.");

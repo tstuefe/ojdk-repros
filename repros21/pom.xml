@@ -22,6 +22,12 @@
             <artifactId>picocli</artifactId>
             <version>4.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>de.stuefe</groupId>
+            <artifactId>repros8</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
