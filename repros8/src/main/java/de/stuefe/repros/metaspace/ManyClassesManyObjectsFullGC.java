@@ -41,6 +41,8 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
     @CommandLine.Option(names = { "--objects", "-n" }, description = "Number of objects per class (default: ${DEFAULT_VALUE})")
     int numObjectsPerClass=50000;
 
+    @CommandLine.Option(names = { "--cycles", "-c" }, description = "Number of GC cycles (default: ${DEFAULT_VALUE})")
+    int cycles = 10;
 
     static Object[] RETAIN;
 
@@ -74,14 +76,18 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
         RETAIN = new Object[numObjectsPerClass * numClasses];
         int idx = 0;
 
-        for (int i = 0; i < numClasses; i ++) {
+        Constructor ctors[] = new Constructor[numClasses];
+        for (int i = 0; i < numClasses; i++) {
             Class clazz = classes[i];
             Constructor ctor = clazz.getDeclaredConstructor();
-            for (int j = 0; j < numObjectsPerClass; j++) {
-                RETAIN[idx] = ctor.newInstance();
+            ctors[i] = ctor;
+        }
+
+        for (int j = 0; j < numObjectsPerClass; j++) {
+            for (int i = 0; i < numClasses; i++) {
+                RETAIN[idx] = ctors[i].newInstance();
                 idx++;
             }
-            System.out.print("*");
         }
         System.out.println();
 
@@ -91,7 +97,7 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
             MiscUtils.waitForKeyPress();
         }
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < cycles; i++) {
             System.gc();
         }
 
