@@ -31668,4 +31668,5 @@ classes/jdk/nio/zipfs/ZipFileSystemProvider.class (ok)
 legal/LICENSE (omitted)
 legal/ASSEMBLY_EXCEPTION (omitted)
 legal/ADDITIONAL_LICENSE_INFO (omitted)
-Loaded : 24725 classes from 71 jar file(s)
+Loaded : 24725 classes from 71jar file(s)
+<press key>

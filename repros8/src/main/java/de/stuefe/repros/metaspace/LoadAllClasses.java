@@ -18,101 +18,120 @@ import java.util.concurrent.Callable;
         description = "LoadAllClasses repro.")
 public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
 
-    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
-            description = "Autoyes.")
+    @CommandLine.Option(names = { "--autoyes", "-y" },
+            description = "Auto-Yes (default: ${DEFAULT_VALUE})).)")
     boolean auto_yes;
     int unattendedModeWaitSecs = 4;
 
-    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
-            description = "do not wait (only with autoyes).")
-    boolean nowait;
+    @CommandLine.Option(names = { "--nowait" },
+            description = "do not wait (only with autoyes) (default: ${DEFAULT_VALUE})).")
+    boolean nowait = false;
 
-    @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
-            description = "Verbose.")
-    boolean verbose;
+    @CommandLine.Option(names = { "--verbose", "-v" }, description = "Verbose (default: ${DEFAULT_VALUE})")
+    boolean verbose = false;
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new LoadAllClasses()).execute(args);
         System.exit(exitCode);
     }
 
-    @CommandLine.Option(names = { "--ignore-errors", "-i" }, defaultValue = "false",
-            description = "Ignore load errors.")
-    boolean ignoreErrors;
+    @CommandLine.Option(names = { "--ignore-errors", "-i" },
+            description = "Ignore load errors (default: ${DEFAULT_VALUE})")
+    boolean ignoreErrors = false;
+
+    @CommandLine.Option(names = { "--num-loaders", "-L" },
+            description = "Number of loaders. Each one loads every class! (default: ${DEFAULT_VALUE})")
+    int numLoaders = 1;
 
     @CommandLine.Parameters(index = "0..*", arity = "1")
     List<String> files;
+
+    void log(String s) {
+        if (verbose) {
+            System.out.print(s);
+        }
+    }
+
+    void log_cr(String s) {
+        if (verbose) {
+            System.out.println(s);
+        }
+    }
 
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
         int loadedTotal = 0;
-        int jarsTotal = 0;
 
-        for (String s : files) {
-            System.out.println("Load all classes from: " + s);
+        ClassLoader loaders[] = new ClassLoader[numLoaders];
+        for (int i = 0; i < numLoaders; i++) {
+            for (String s : files) {
 
-            JarFile jarFile = null;
-            try {
-                jarFile = new JarFile(s);
-            } catch (IOException ex) {
-                System.err.println("Failed to open jar " + s);
-                if (!ignoreErrors) {
-                    ex.printStackTrace();
-                    return -1;
-                } else {
-                    continue;
-                }
-            }
+                log_cr("Load all classes from: " + s);
 
-            jarsTotal ++;
-
-            boolean isJmod = s.endsWith(".jmod");
-
-            Enumeration<JarEntry> e = jarFile.entries();
-
-            URL[] urls = { new URL("jar:file:" + s + "!/") };
-            URLClassLoader cl = URLClassLoader.newInstance(urls);
-
-            while (e.hasMoreElements()) {
-                JarEntry je = e.nextElement();
-                System.out.print(je.getName());
-                if (je.isDirectory() || !je.getName().endsWith(".class")) {
-                    System.out.println(" (omitted)");
-                    continue;
-                }
-                if (isJmod && !je.getName().startsWith("classes/")) {
-                    System.out.println(" (omitted)");
-                    continue;
-                }
-                String className = je.getName().substring(0,je.getName().length() - 6 /* cut ".class" */ );
-                if (isJmod) {
-                    // cut leading "classes/"
-                    className = className.substring(8);
-                }
-                className = className.replace('/', '.');
-                Class c = null;
+                JarFile jarFile = null;
                 try {
-                    c = cl.loadClass(className);
-                } catch (Throwable ex) {
+                    jarFile = new JarFile(s);
+                } catch (IOException ex) {
+                    System.err.println("Failed to open jar " + s);
                     if (!ignoreErrors) {
                         ex.printStackTrace();
                         return -1;
                     } else {
-                        System.out.println(" (failed)");
                         continue;
                     }
                 }
-                if (c != null) {
-                    System.out.println(" (ok)");
-                    loadedTotal ++;
-                } else {
-                    System.out.println(" (null?)");
+
+                boolean isJmod = s.endsWith(".jmod");
+
+                Enumeration<JarEntry> e = jarFile.entries();
+
+                URL[] urls = {new URL("jar:file:" + s + "!/")};
+                URLClassLoader cl = URLClassLoader.newInstance(urls);
+                loaders[i] = cl;
+
+                while (e.hasMoreElements()) {
+                    JarEntry je = e.nextElement();
+                    log(je.getName());
+                    if (je.isDirectory() || !je.getName().endsWith(".class")) {
+                        log_cr(" (omitted)");
+                        continue;
+                    }
+                    if (isJmod && !je.getName().startsWith("classes/")) {
+                        log_cr(" (omitted)");
+                        continue;
+                    }
+                    String className = je.getName().substring(0, je.getName().length() - 6 /* cut ".class" */);
+                    if (isJmod) {
+                        // cut leading "classes/"
+                        className = className.substring(8);
+                    }
+                    className = className.replace('/', '.');
+                    Class c = null;
+                    try {
+                        c = cl.loadClass(className);
+                    } catch (Throwable ex) {
+                        if (!ignoreErrors) {
+                            ex.printStackTrace();
+                            return -1;
+                        } else {
+                            log_cr(" (failed)");
+                            continue;
+                        }
+                    }
+                    if (c != null) {
+                        log_cr(" (ok)");
+                        loadedTotal++;
+                    } else {
+                        log_cr(" (null?)");
+                    }
                 }
             }
         }
-        System.out.println("Loaded : " + loadedTotal + " classes from " + jarsTotal + " jar file(s)");
+
+        waitForKeyPress("Loaded : " + loadedTotal + " classes");
+
         return 0;
     }
 }
