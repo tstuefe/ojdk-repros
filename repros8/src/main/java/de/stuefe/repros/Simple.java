@@ -1,44 +1,43 @@
 package de.stuefe.repros;
 
-interface I1 {
-    void say();
-    void say2();
-}
+import picocli.CommandLine;
 
-interface I2 {
+import java.util.concurrent.Callable;
 
-}
+public class Simple extends TestCaseBase implements Callable<Integer> {
 
-abstract class SimpleBase implements I1, I2  {
+    @CommandLine.Option(names = { "--stdout", "-1" },
+            description = "Print given text to stdout (default: ${DEFAULT-VALUE}).")
+    String stdoutText = "Hallo Stdout";
 
-}
+    @CommandLine.Option(names = { "--stderr", "-2" },
+            description = "Print given text to stderr (default: ${DEFAULT-VALUE}).")
+    String stderrText = "Hallo Stderr";
 
-public class Simple extends SimpleBase {
+    @CommandLine.Option(names = { "--return", "-r" },
+            description = "Return value (default: ${DEFAULT-VALUE}).")
+    int rc = 0;
 
-    int i = 0;
-    Object o;
-    Object o2;
-    int i2 = 0;
-    Object o3;
-    Object o4;
+    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
+            description = "Autoyes.")
+    boolean auto_yes;
+    int unattendedModeWaitSecs = 4;
 
-    public void say() { System.out.print("hi"); }
-    public void say2() { System.out.print("hi2"); }
+    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
+            description = "do not wait (only with autoyes).")
+    boolean nowait;
 
-    public static void main(String[] args) {
-
-        Simple s = new Simple();
-        Simple2 s2 = new Simple2();
-
-        MiscUtils.waitForKeyPress();
-
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new Simple()).execute(args);
+        System.exit(exitCode);
     }
 
-
-
-}
-
-
-class Simple2 extends Simple {
+    public Integer call() throws Exception {
+        initialize(false, auto_yes, nowait);
+        System.out.println(stdoutText);
+        System.err.println(stderrText);
+        MiscUtils.waitForKeyPress();
+        return rc;
+    }
 
 }

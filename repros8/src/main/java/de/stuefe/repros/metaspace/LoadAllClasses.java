@@ -39,8 +39,8 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
             description = "Ignore load errors (default: ${DEFAULT_VALUE})")
     boolean ignoreErrors = false;
 
-    @CommandLine.Option(names = { "--num-loaders", "-L" },
-            description = "Number of loaders. Each one loads every class! (default: ${DEFAULT_VALUE})")
+    @CommandLine.Option(names = { "--repeat", "-r" },
+            description = "Repeat loading with different loaders (default: ${DEFAULT_VALUE})")
     int numLoaders = 1;
 
     @CommandLine.Parameters(index = "0..*", arity = "1")
@@ -58,18 +58,19 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
         }
     }
 
+    final static ArrayList<ClassLoader> loaders = new ArrayList<>();
+
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
         int loadedTotal = 0;
 
-        ClassLoader loaders[] = new ClassLoader[numLoaders];
+        waitForKeyPress("Before start...");
+
         for (int i = 0; i < numLoaders; i++) {
             for (String s : files) {
-
                 log_cr("Load all classes from: " + s);
-
                 JarFile jarFile = null;
                 try {
                     jarFile = new JarFile(s);
@@ -87,9 +88,9 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
 
                 Enumeration<JarEntry> e = jarFile.entries();
 
-                URL[] urls = {new URL("jar:file:" + s + "!/")};
-                URLClassLoader cl = URLClassLoader.newInstance(urls);
-                loaders[i] = cl;
+                URL[] urls = { new URL("jar:file:" + s + "!/") };
+                URLClassLoader cl = new URLClassLoader(urls, null /* dont search parent */);
+                loaders.add(cl);
 
                 while (e.hasMoreElements()) {
                     JarEntry je = e.nextElement();
@@ -130,7 +131,9 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
             }
         }
 
-        waitForKeyPress("Loaded : " + loadedTotal + " classes");
+        waitForKeyPress("Loaded : " + loadedTotal + " classes into " + loaders.size() + " loaders.");
+
+        waitForKeyPress("Loaded : " + loadedTotal + " classes into " + loaders.size() + " loaders.");
 
         return 0;
     }

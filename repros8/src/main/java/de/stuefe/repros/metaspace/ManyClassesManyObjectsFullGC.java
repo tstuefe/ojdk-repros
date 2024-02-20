@@ -85,8 +85,13 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
 
         for (int j = 0; j < numObjectsPerClass; j++) {
             for (int i = 0; i < numClasses; i++) {
-                RETAIN[idx] = ctors[i].newInstance();
-                idx++;
+                // From time to time alloc a String (an object from a class coming from CDS)
+                if ((i % 100) == 0) {
+                    RETAIN[idx] = new Object();
+                } else {
+                    RETAIN[idx] = ctors[i].newInstance();
+                    idx++;
+                }
             }
         }
         System.out.println();
