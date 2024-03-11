@@ -18,14 +18,18 @@ public class Simple extends TestCaseBase implements Callable<Integer> {
             description = "Return value (default: ${DEFAULT-VALUE}).")
     int rc = 0;
 
-    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
-            description = "Autoyes.")
-    boolean auto_yes;
+    @CommandLine.Option(names = { "--time", "-t" },
+            description = "Print times (default: ${DEFAULT-VALUE}).")
+    boolean printTimes = false;
+
+    @CommandLine.Option(names = { "--autoyes", "-y" },
+            description = "Autoyes (default: ${DEFAULT-VALUE}).")
+    boolean auto_yes = false;
     int unattendedModeWaitSecs = 4;
 
-    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
-            description = "do not wait (only with autoyes).")
-    boolean nowait;
+    @CommandLine.Option(names = { "--nowait" },
+            description = "do not wait (only with autoyes) (default: ${DEFAULT-VALUE}).")
+    boolean nowait = false;
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new Simple()).execute(args);
@@ -36,7 +40,7 @@ public class Simple extends TestCaseBase implements Callable<Integer> {
         initialize(false, auto_yes, nowait);
         System.out.println(stdoutText);
         System.err.println(stderrText);
-        MiscUtils.waitForKeyPress();
+        waitForKeyPress();
         return rc;
     }
 

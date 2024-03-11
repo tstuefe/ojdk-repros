@@ -7,11 +7,17 @@ public class TestCaseBase {
     private boolean is_verbose_mode;
     private boolean autoyes;
     private boolean nowait;
+    private int unattendedWaitSecs;
 
-    protected void initialize(boolean is_verbose_mode, boolean autoyes, boolean nowait) {
+    protected void initialize(boolean is_verbose_mode, boolean autoyes, boolean nowait, int unattendedWaitSecs) {
         this.is_verbose_mode = is_verbose_mode;
         this.autoyes = autoyes;
         this.nowait = nowait;
+        this.unattendedWaitSecs = unattendedWaitSecs;
+    }
+
+    protected void initialize(boolean is_verbose_mode, boolean autoyes, boolean nowait) {
+        initialize(is_verbose_mode, autoyes, nowait, 4);
     }
 
     /***
@@ -31,6 +37,7 @@ public class TestCaseBase {
             System.out.println(msg);
         }
     }
+
 
     /**
      * print a message and:
@@ -64,7 +71,7 @@ public class TestCaseBase {
     }
 
     protected void waitForKeyPress(String message) {
-        waitForKeyPress(message, 0);
+        waitForKeyPress(message, unattendedWaitSecs);
     }
 
     protected void waitForKeyPress() {

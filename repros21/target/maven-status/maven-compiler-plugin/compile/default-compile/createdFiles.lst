@@ -1,7 +1,0 @@
-META-INF/native-image/picocli-generated/de.stuefe/repros21/proxy-config.json
-META-INF/native-image/picocli-generated/de.stuefe/repros21/reflect-config.json
-META-INF/native-image/picocli-generated/de.stuefe/repros21/resource-config.json
-de/stuefe/repros/TestCaseBase.class
-de/stuefe/repros/Skeleton.class
-de/stuefe/repros/FFIMallocFreeTest.class
-de/stuefe/repros/FFI1Test.class
