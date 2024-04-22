@@ -23,7 +23,11 @@ public class AdvantestRepro extends TestCaseBase implements Callable<Integer> {
 
     @CommandLine.Option(names = { "--cycles" },
             description = "Number of repeats (default: ${DEFAULT-VALUE})")
-    int numCycles = 3;
+    int numCycles = 10;
+
+    @CommandLine.Option(names = { "--initial-liveset-mb" },
+            description = "Size of initial liveset (default: ${DEFAULT-VALUE})")
+    int initial_liveset_mb = 0;
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new AdvantestRepro()).execute(args);
@@ -31,6 +35,7 @@ public class AdvantestRepro extends TestCaseBase implements Callable<Integer> {
     }
 
     volatile Object[] retain;
+    volatile byte[][] retain2;
 
     @Override
     public Integer call() throws Exception {
@@ -39,7 +44,18 @@ public class AdvantestRepro extends TestCaseBase implements Callable<Integer> {
 
         System.out.println("Number of Cylces: " + numCycles);
 
+        System.out.println("Building initial set...");
+        if (initial_liveset_mb > 0) {
+            int num_old_blocks = initial_liveset_mb * 1024;
+            int headersize = 16;
+            retain2 = new byte[num_old_blocks][];
+            for (int i = 0; i < num_old_blocks; i ++) {
+                retain2[i] = new byte[1024 - headersize];
+            }
+        }
+
         waitForKeyPress("System.gc...");
+        Thread.sleep(4000);
         System.gc();
         System.gc();
 

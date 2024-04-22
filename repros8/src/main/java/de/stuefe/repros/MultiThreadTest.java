@@ -19,30 +19,38 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             description = "Stack Depth (default: ${DEFAULT-VALUE}).")
     int stackDepth = 100;
 
-    @CommandLine.Option(names = { "--wait-time", "-w" }, defaultValue = "10",
-            description = "Seconds each thread is alive.")
-    int secs;
+    @CommandLine.Option(names = { "--wait-time", "-w" },
+            description = "Seconds each thread is alive (default: ${DEFAULT-VALUE}).")
+    int secs = 10;
 
-    @CommandLine.Option(names = { "--cycles", "-c" }, defaultValue = "1",
-            description = "how often we repeat this.")
-    int repeat;
+    @CommandLine.Option(names = { "--cycles", "-c" },
+            description = "how often we repeat this (default: ${DEFAULT-VALUE}).")
+    int repeat = 1;
 
-    @CommandLine.Option(names = { "--gc" }, defaultValue = "false",
-            description = "Do a gc after each cycle.")
-    boolean gc_after_cycle;
+    @CommandLine.Option(names = { "--gc" },
+            description = "Do a gc after each cycle (default: ${DEFAULT-VALUE}).")
+    boolean gc_after_cycle = false;
 
-    @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
-            description = "Autoyes.")
-    boolean auto_yes;
+    @CommandLine.Option(names = { "--autoyes", "-y" },
+            description = "Autoyes (default: ${DEFAULT-VALUE}).")
+    boolean auto_yes = false;
     int unattendedModeWaitSecs = 4;
 
-    @CommandLine.Option(names = { "--nowait" }, defaultValue = "false",
-            description = "do not wait (only with autoyes).")
-    boolean nowait;
+    @CommandLine.Option(names = { "--nowait" },
+            description = "do not wait (only with autoyes) (default: ${DEFAULT-VALUE}).")
+    boolean nowait = false;
 
-    @CommandLine.Option(names = { "--verbose", "-v" }, defaultValue = "false",
-            description = "Verbose.")
-    boolean verbose;
+    @CommandLine.Option(names = { "--verbose", "-v" },
+            description = "Verbose (default: ${DEFAULT-VALUE}).")
+    boolean verbose = false;
+
+    @CommandLine.Option(names = { "--locks" },
+            description = "Number of locks (must be <= number of threads) (default: ${DEFAULT-VALUE}).")
+    int numLocks = 0;
+
+    @CommandLine.Option(names = { "--lockms" },
+            description = "Number of milliseconds to lock (default: ${DEFAULT-VALUE}).")
+    int lockms = 100;
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new de.stuefe.repros.MultiThreadTest()).execute(args);
@@ -65,17 +73,31 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
 
     class Sleeper extends Thread {
         CyclicBarrier barrier;
+        Object locks[];
         int no;
-        public Sleeper(CyclicBarrier barrier, int no) {
+        public Sleeper(CyclicBarrier barrier, int no, Object locks[]) {
             this.barrier = barrier;
             this.no = no;
+            this.locks = locks;
         }
+
+        void lockTheLock() throws InterruptedException {
+            // do the locking thing
+            if (locks != null) {
+                int lockno = no % locks.length;
+                synchronized (locks[lockno]) {
+                    sleep(lockms);
+                }
+            }
+        }
+
         @Override
         public void run() {
             try {
                 barrier.await(); // 1
                 l += do_recursively(0);
                 barrier.await(); // 2
+                lockTheLock();
                 // main thread sleeps
                 barrier.await(); // 3
             } catch (InterruptedException e) {
@@ -94,6 +116,16 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         System.out.println("Repeat count: " + repeat);
         System.out.println("Stack depth: " + stackDepth);
         System.out.println("GC after Cycle: " + gc_after_cycle);
+        System.out.println("Number of locks: " + numLocks);
+        System.out.println("lock ms: " + lockms);
+
+        Object locks[] = null;
+        if (numLocks > 0) {
+            locks = new Object[numLocks];
+            for (int i = 0; i < numLocks; i ++) {
+                locks[i] = new Object();
+            }
+        }
 
         for (int cycle = 0; cycle < repeat; cycle ++) {
 
@@ -106,7 +138,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             long t1 = System.currentTimeMillis();
             try {
                 for (int i = 0; i < num_threads; i ++) {
-                    sleepers[i] = new Sleeper(barrier, i);
+                    sleepers[i] = new Sleeper(barrier, i, locks);
                     sleepers[i].start();
                     created ++;
                     if (created % (num_threads / 10) == 0) {
