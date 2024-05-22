@@ -16,8 +16,8 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
     int num_threads = 1000;
 
     @CommandLine.Option(names = { "--stack-size" },
-            description = "Stack Size (default: ${DEFAULT-VALUE}).")
-    int stackSize = 1024 * 1024;
+            description = "Stack Size in KB (default: ${DEFAULT-VALUE}).")
+    int stackSize = 1024;
 
     @CommandLine.Option(names = { "--stack-depth", "-D" },
             description = "Stack Depth (default: ${DEFAULT-VALUE}).")
@@ -80,7 +80,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         Object locks[];
         int no;
         public Sleeper(CyclicBarrier barrier, int no, Object locks[]) {
-            super(null, null, "TestThread", stackSize);
+            super(null, null, "TestThread", stackSize * 1024);
             this.barrier = barrier;
             this.no = no;
             this.locks = locks;
