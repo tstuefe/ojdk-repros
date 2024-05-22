@@ -15,7 +15,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             description = "Number of threads (default: ${DEFAULT-VALUE}).")
     int num_threads = 1000;
 
-    @CommandLine.Option(names = { "--stack-size" },
+    @CommandLine.Option(names = { "--stack-size", "-s" },
             description = "Stack Size in KB (default: ${DEFAULT-VALUE}).")
     int stackSize = 1024;
 
