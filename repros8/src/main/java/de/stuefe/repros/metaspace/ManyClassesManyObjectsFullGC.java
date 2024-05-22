@@ -44,15 +44,24 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
     @CommandLine.Option(names = { "--cycles", "-c" }, description = "Number of GC cycles (default: ${DEFAULT_VALUE})")
     int cycles = 10;
 
+    @CommandLine.Option(names = { "--print-hashes" }, description = "Print hashes (default: ${DEFAULT_VALUE})")
+    boolean printHashes = false;
+
     static Object[] RETAIN;
 
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
+        final String source = "" +
+                "public class CLASSNAME {" +
+                "}";
+
         System.out.print("Generate " + numClasses + " classes...");
         for (int i = 0; i < numClasses; i ++) {
-            Utils.createRandomClass("my_generated_class" + i, 1);
+            String classname = "my_generated_class" + i;
+            String source0 = source.replace("CLASSNAME", classname);
+            Utils.createClassFromSource(classname, source0);
         }
         System.out.println();
 
@@ -85,12 +94,23 @@ public class ManyClassesManyObjectsFullGC extends TestCaseBase implements Callab
 
         for (int j = 0; j < numObjectsPerClass; j++) {
             for (int i = 0; i < numClasses; i++) {
-                // From time to time alloc a String (an object from a class coming from CDS)
                 RETAIN[idx] = ctors[i].newInstance();
                 idx++;
             }
         }
         System.out.println();
+
+        if (printHashes) {
+            int col = 0;
+            for (Object o: RETAIN) {
+                int i = System.identityHashCode(o);
+                System.out.print(Integer.toHexString(i) + " ");
+                if (++col == 16) {
+                    col = 0;
+                    System.out.println("");
+                }
+            }
+        }
 
         System.out.print("Done; will start GCs... ");
 

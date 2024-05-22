@@ -67,22 +67,10 @@ public class Utils {
     }
 
     static public String makeRandomSource(int size) {
-        return makeRandomSource(size, defaultWiggle);
-    }
-
-    static public String makeRandomSource(int size, float wiggle) {
 
         StringBuilder bld = new StringBuilder();
         bld.append("public class CLASSNAME {\n");
-        int spread = (int)(size * wiggle);
-        int size_with_wiggle = 0;
-        if (spread > 0) {
-            int offset = rand.nextInt(spread);
-            size_with_wiggle = Math.min(size + (offset - spread / 2), 1);
-        } else {
-            size_with_wiggle = size;
-        }
-        for (int i = 0; i < size_with_wiggle; i ++) {
+        for (int i = 0; i < size; i ++) {
             bld.append("public int i" + i + " = " + i * 3 + ";\n");
             bld.append("public String s" + i + " = \"hallo" + i + "\";\n");
             bld.append("public byte[] b" + i + " = new byte[] {");
