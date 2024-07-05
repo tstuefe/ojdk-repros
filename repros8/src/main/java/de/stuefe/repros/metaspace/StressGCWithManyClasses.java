@@ -47,14 +47,18 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
     @CommandLine.Option(names = { "--print-hashes" }, description = "Print hashes (default: ${DEFAULT_VALUE})")
     boolean printHashes = false;
 
-    @CommandLine.Option(names = { "--randomize" }, description = "Randomizes object classes (off: strict interleaving) (default: ${DEFAULT_VALUE})")
-    boolean randomize = true;
+    @CommandLine.Option(names = { "--no-randomization" }, description = "Disables randomization (default: ${DEFAULT_VALUE})")
+    boolean dont_randomize = false;
+
+    boolean randomize;
 
     @CommandLine.Option(names = { "--class-stride" }, description = "If not --randomize: stride by which we alter the class per object (default: ${DEFAULT_VALUE})")
     int classStride = 1;
 
-    @CommandLine.Option(names = { "--ball-of-yarn" }, description = "If true, all live objects are wired up as a (randomized, if --randomize) object graph. If false, they are all in a flat array. (default: ${DEFAULT_VALUE})")
-    boolean ballOfYarn = true;
+    @CommandLine.Option(names = { "--flat-mode" }, description = "If true, all live objects are in an array. If false, they are wired up randomly to a ball of yarn. (default: ${DEFAULT_VALUE})")
+    boolean flatMode = false;
+
+    boolean ballOfYarnMode;
 
     static Object[] RETAIN; // array mode
     static Object BALL_OF_YARN; // ball-of-yarn mode
@@ -80,46 +84,24 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         return false;
     }
 
-    final static void swapSlots(int[] arr, int x, int y) {
-        int tmp = arr[x];
-        arr[x] = arr[y];
-        arr[y] = tmp;
-    }
-
     Object buildBallOfYarn(Object[] all, Random r) throws IllegalAccessException {
-        // for speed, build up array of fields. Each object has at least one oop field (o0), at most four
-        Field[][] fieldArrays = new Field[all.length][];
-        for (int i = 0; i < all.length; i++) {
-            fieldArrays[i] = all[i].getClass().getFields();
-        }
-
-        int[] referredToBy = new int[all.length];
-        int[] refers = new int[all.length];
-        for (int i = 0; i < all.length; i ++) {
-            referredToBy[i] = i - 1;
-            refers[i] = i + 1;
-        }
-        referredToBy[0] = all.length - 1;
-        refers[all.length - 1] = 0;
-
-        // shuffle
-        if (randomize) {
-            for (int i = 1; i < all.length; i ++) {
-                int swapWith = Math.max(1, r.nextInt(all.length));
-                swapSlots(refers, i, swapWith);
-                swapSlots(referredToBy, i, swapWith);
-            }
-        }
         // now wire objects up.
         boolean[] empties = new boolean[all.length];
         for (int i = 0; i < all.length; i++) {
-            Field[] fields = fieldArrays[i];
-            // wire up first field according to the precalculated shuffled refers array
-            fields[0].set(all[i], all[refers[i]]);
-            // Wire up o1..o3 in whatever direction
-            for (int j = 1; j < fields.length; j++) {
-                int targetIdx = randomize ? r.nextInt(fields.length) : (i % fields.length);
-                fields[j].set(all[i], all[targetIdx]);
+            Object o = all[i];
+            Field[] fields = o.getClass().getFields();
+            // Wire up o0..on-2 in whatever direction. Last field points to successor, to guarantee connection with
+            // o0
+            for (int j = 0; j < fields.length; j++) {
+                boolean lastfield = (j == fields.length - 1);
+                int targetIdx = 0;
+                int nextObjectIdx = (i + 1) % all.length;
+                if (lastfield) {
+                    targetIdx = nextObjectIdx;
+                } else {
+                    targetIdx = randomize ? r.nextInt(all.length) : nextObjectIdx;
+                }
+                fields[j].set(o, all[targetIdx]);
             }
         }
 
@@ -130,11 +112,14 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
+        randomize = !dont_randomize;
+        ballOfYarnMode = !flatMode;
+
         System.out.println("Num Classes: " + numClasses);
         System.out.println("Num Objects per Class: " + numObjectsPerClass);
         System.out.println("Cycles: " + cycles);
-        System.out.println("randomize? " + randomize);
-        System.out.println("Mode: " + (ballOfYarn ? "ball-of-yarn" : "array"));
+        System.out.println("randomize: " + randomize + " (disable with --no-randomization)");
+        System.out.println("ballOfYarn mode: " + ballOfYarnMode + " (switch to flat mode with --flat-mode)");
 
         Random r = new Random(0x12345678);
 
@@ -145,7 +130,7 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         for (int i = 0; i < numClasses; i ++) {
             String classname = "my_generated_class" + i;
             int numOopFields = randomize ? r.nextInt(numMaxOopFields) : (i % numMaxOopFields);
-            numOopFields = Math.max(1, numOopFields);
+            numOopFields = Math.max(numMinOopFields, numOopFields);
             String source = generateSource(numOopFields);
             String source0 = source.replace("CLASSNAME", classname);
             Utils.createClassFromSource(classname, source0);
@@ -192,6 +177,8 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         }
         System.out.println();
 
+        ctors = null;
+
         if (printHashes) {
             int col = 0;
             for (Object o: RETAIN) {
@@ -207,10 +194,14 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         // In ball-of-yarn-mode, wire up all objects and just keep the start of the thread
         // In array mode, we keep using the RETAIN array
         Object startOfBallOfYarn;
-        if (ballOfYarn) {
+        if (ballOfYarnMode) {
             BALL_OF_YARN = buildBallOfYarn(RETAIN, r);
             RETAIN = null;
         }
+
+        System.out.println("Preparatory GC...");
+        System.gc();
+        System.gc();
 
         System.out.println("Done; will start GCs... ");
 
