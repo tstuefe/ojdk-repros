@@ -38,6 +38,9 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
     @CommandLine.Option(names = { "--num-classes", "-C" }, description = "Number of classes (default: ${DEFAULT_VALUE})")
     int numClasses=256;
 
+    @CommandLine.Option(names = { "--generate-classes", "-G" }, description = "if specified, generates classes; otherwise assumes they are present (default: ${DEFAULT_VALUE})")
+    boolean generateClasses = false;
+
     @CommandLine.Option(names = { "--objects", "-n" }, description = "Number of objects per class (default: ${DEFAULT_VALUE})")
     int numObjectsPerClass=50000;
 
@@ -126,25 +129,29 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         int numMinOopFields = 1;
         int numMaxOopFields = 4;
 
-        System.out.print("Generate " + numClasses + " classes...");
-        for (int i = 0; i < numClasses; i ++) {
-            String classname = "my_generated_class" + i;
-            int numOopFields = randomize ? r.nextInt(numMaxOopFields) : (i % numMaxOopFields);
-            numOopFields = Math.max(numMinOopFields, numOopFields);
-            String source = generateSource(numOopFields);
-            String source0 = source.replace("CLASSNAME", classname);
-            Utils.createClassFromSource(classname, source0);
+        if (generateClasses) {
+            System.out.print("Generate " + numClasses + " classes...");
+            for (int i = 0; i < numClasses; i ++) {
+                String classname = "GeneratedClass" + i;
+                int numOopFields = randomize ? r.nextInt(numMaxOopFields) : (i % numMaxOopFields);
+                numOopFields = Math.max(numMinOopFields, numOopFields);
+                String source = generateSource(numOopFields);
+                String source0 = source.replace("CLASSNAME", classname);
+                Utils.createClassFromSource(classname, source0);
+            }
+            System.out.println();
         }
-        System.out.println();
 
         System.out.print("Loading " + numClasses + "...");
 
-        InMemoryClassLoader loader = new InMemoryClassLoader("loader", null);
+        ClassLoader loader = generateClasses ?
+                new InMemoryClassLoader("loader", null) : ClassLoader.getSystemClassLoader();
+
         Class classes[] = new Class[numClasses];
 
         try {
             for (int j = 0; j < numClasses; j++) {
-                classes[j] = Class.forName("my_generated_class" + j, true, loader);
+                classes[j] = Class.forName("GeneratedClass" + j, true, loader);
             }
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
