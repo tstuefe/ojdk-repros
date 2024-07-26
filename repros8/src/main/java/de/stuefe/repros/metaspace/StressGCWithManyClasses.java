@@ -34,119 +34,88 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
         System.exit(exitCode);
     }
 
+    @CommandLine.Option(names = { "--randseed", "-R" }, description = "Randomizer seed (default: ${DEFAULT_VALUE})")
+    long randomizerSeed=12345678;
 
     @CommandLine.Option(names = { "--num-classes", "-C" }, description = "Number of classes (default: ${DEFAULT_VALUE})")
     int numClasses=256;
 
-    @CommandLine.Option(names = { "--generate-classes", "-G" }, description = "if specified, generates classes; otherwise assumes they are present (default: ${DEFAULT_VALUE})")
-    boolean generateClasses = false;
+    @CommandLine.Option(names = { "--objects", "-n" }, description = "Number of objects (default: ${DEFAULT_VALUE})")
+    int numObjects=1000 * 1000 * 10;
 
-    @CommandLine.Option(names = { "--objects", "-n" }, description = "Number of objects per class (default: ${DEFAULT_VALUE})")
-    int numObjectsPerClass=50000;
+    // Realistic defaults for the distribution of various KlassKind. Note that the typical
+    // distribution can vary a lot. E.g. SpecJBB seems to have a very low TAK/OAK content. Here,
+    // we use measurements from Spring petclinic liveset
+    static final float OAK_distribution_default = 5.0f;
+    static final float TAK_distribution_default = 12.0f;
+    static final float IK_distribution_default = 100.0f - TAK_distribution_default - OAK_distribution_default;
+
+    @CommandLine.Option(names = { "--percent-TAK" }, description = "Which percentage of liveset objects should be primitive arrays (default: ${DEFAULT_VALUE})")
+    float percentTAK=TAK_distribution_default;
+    @CommandLine.Option(names = { "--percent-OAK" }, description = "Which percentage of liveset objects should be Object arrays (default: ${DEFAULT_VALUE})")
+    float percentOAK=OAK_distribution_default;
 
     @CommandLine.Option(names = { "--cycles", "-c" }, description = "Number of GC cycles (default: ${DEFAULT_VALUE})")
     int cycles = 10;
 
     @CommandLine.Option(names = { "--print-hashes" }, description = "Print hashes (default: ${DEFAULT_VALUE})")
     boolean printHashes = false;
-
-    @CommandLine.Option(names = { "--no-randomization" }, description = "Disables randomization (default: ${DEFAULT_VALUE})")
-    boolean dont_randomize = false;
-
-    boolean randomize;
-
-    @CommandLine.Option(names = { "--class-stride" }, description = "If not --randomize: stride by which we alter the class per object (default: ${DEFAULT_VALUE})")
-    int classStride = 1;
-
-    @CommandLine.Option(names = { "--flat-mode" }, description = "If true, all live objects are in an array. If false, they are wired up randomly to a ball of yarn. (default: ${DEFAULT_VALUE})")
-    boolean flatMode = false;
-
-    boolean ballOfYarnMode;
+    @CommandLine.Option(names = { "--wire-up" }, description = "Wire up objects (default: ${DEFAULT_VALUE})")
+    boolean wireUp = false;
 
     static Object[] RETAIN; // array mode
-    static Object BALL_OF_YARN; // ball-of-yarn mode
 
-    static String generateSource(int numOops) {
-        StringBuilder bld = new StringBuilder();
-        bld.append("public class CLASSNAME {");
-        for (int i = 0; i < numOops; i++) {
-            bld.append("public Object o");
-            bld.append(i);
-            bld.append(';');
-        }
-        bld.append("};");
-        return bld.toString();
-    }
+    static void createInterconnections(Object[] all, Random r, Class isGeneratedMarkerInterface) throws IllegalAccessException {
 
-    static boolean isDirectlyConnected(Object referer, Object referee, Field[] o1Fields) throws IllegalAccessException {
-        for (Field f : o1Fields) {
-            if (f.get(referer) == referee) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    Object buildBallOfYarn(Object[] all, Random r) throws IllegalAccessException {
-        // now wire objects up.
-        boolean[] empties = new boolean[all.length];
+        // Now wire objects up. Only do this for classes that are generated (see GenerateSources)
         for (int i = 0; i < all.length; i++) {
             Object o = all[i];
-            Field[] fields = o.getClass().getFields();
-            // Wire up o0..on-2 in whatever direction. Last field points to successor, to guarantee connection with
-            // o0
-            for (int j = 0; j < fields.length; j++) {
-                boolean lastfield = (j == fields.length - 1);
-                int targetIdx = 0;
-                int nextObjectIdx = (i + 1) % all.length;
-                if (lastfield) {
-                    targetIdx = nextObjectIdx;
-                } else {
-                    targetIdx = randomize ? r.nextInt(all.length) : nextObjectIdx;
+            if (isGeneratedMarkerInterface.isInstance(o)) {
+                Field[] fields = o.getClass().getFields();
+                for (Field f : fields) {
+                    if (f.getType() == java.lang.Object.class) {
+                        Object target = all[r.nextInt(all.length)];
+                        f.set(o, target);
+                    }
                 }
-                fields[j].set(o, all[targetIdx]);
+            } else if (o instanceof java.lang.Object[]) {
+                Object[] oa = (Object[]) o;
+                for (int slot = 0; slot < oa.length; slot ++) {
+                    Object target = all[r.nextInt(all.length)];
+                    oa[slot] = target;
+                }
             }
         }
 
-        return all[0];
+    }
+
+    String percentOf(int what, int what100) {
+        float f = ((float) what * 100.0f) / (float) what100;
+        return Float.toString(f) + "%";
     }
 
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
-        randomize = !dont_randomize;
-        ballOfYarnMode = !flatMode;
-
+        System.out.println("Random Seed: " + randomizerSeed);
         System.out.println("Num Classes: " + numClasses);
-        System.out.println("Num Objects per Class: " + numObjectsPerClass);
+        System.out.println("Num Objects: " + numObjects);
+
+        float percentIK = 100.0f - percentOAK - percentTAK;
+
+        System.out.println("Percent IK Objects: " +  percentIK + "%)");
+        System.out.println("Percent OAK Objects: " + percentOAK + "%)");
+        System.out.println("Percent TAK Objects: " +  percentTAK + "%)");
+
+        System.out.println("Wired up: " + wireUp);
         System.out.println("Cycles: " + cycles);
-        System.out.println("randomize: " + randomize + " (disable with --no-randomization)");
-        System.out.println("ballOfYarn mode: " + ballOfYarnMode + " (switch to flat mode with --flat-mode)");
 
-        Random r = new Random(0x12345678);
+        Random r = new Random(randomizerSeed);
 
-        int numMinOopFields = 1;
-        int numMaxOopFields = 4;
+        System.out.println("Loading " + numClasses + " pre-generated classes ...");
 
-        if (generateClasses) {
-            System.out.print("Generate " + numClasses + " classes...");
-            for (int i = 0; i < numClasses; i ++) {
-                String classname = "GeneratedClass" + i;
-                int numOopFields = randomize ? r.nextInt(numMaxOopFields) : (i % numMaxOopFields);
-                numOopFields = Math.max(numMinOopFields, numOopFields);
-                String source = generateSource(numOopFields);
-                String source0 = source.replace("CLASSNAME", classname);
-                Utils.createClassFromSource(classname, source0);
-            }
-            System.out.println();
-        }
-
-        System.out.print("Loading " + numClasses + "...");
-
-        ClassLoader loader = generateClasses ?
-                new InMemoryClassLoader("loader", null) : ClassLoader.getSystemClassLoader();
-
+        ClassLoader loader = ClassLoader.getSystemClassLoader();
         Class classes[] = new Class[numClasses];
 
         try {
@@ -157,13 +126,7 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
             e.printStackTrace();
         }
 
-        System.gc();
-
-        System.out.print("Creating " + numObjectsPerClass + " objects per class...");
-
-        int numObjects = numObjectsPerClass * numClasses;
-        RETAIN = new Object[numObjects];
-        int idx = 0;
+        System.out.println("Materialize pre-generated constructors ...");
 
         Constructor ctors[] = new Constructor[numClasses];
         for (int i = 0; i < numClasses; i++) {
@@ -172,18 +135,46 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
             ctors[i] = ctor;
         }
 
-        // Create objects in heap
-        for (int j = 0; j < numObjectsPerClass; j++) {
-            for (int i = 0; i < numClasses; i++) {
-                int classId = randomize ?
-                        r.nextInt(numClasses) :
-                        (i * classStride) % numClasses;
-                RETAIN[idx] = ctors[classId].newInstance();
-                idx++;
-           }
-        }
-        System.out.println();
+        System.out.println("Creating objects...");
 
+        System.gc();
+
+        RETAIN = new Object[numObjects];
+
+        int numIK = 0, numOAK = 0, numTAK = 0;
+
+        for (int i = 0; i < numObjects; i ++) {
+            Object o;
+            float what = ((float)r.nextInt(100 * 1000) / 1000.0f);
+            if (what < percentOAK) {
+                // OAK
+                int randomLength = r.nextInt(6);
+                o = java.lang.reflect.Array.newInstance(Object.class, randomLength);
+                numOAK ++;
+            } else if (what < (percentOAK + percentTAK)) {
+                // TAK
+                int randomLength = r.nextInt(24);
+                o = java.lang.reflect.Array.newInstance(byte.class, randomLength);
+                numTAK ++;
+            } else {
+                // IK
+                // Choose random constructor
+                int randomGeneratedClass = r.nextInt(numClasses);
+                o = ctors[randomGeneratedClass].newInstance();
+                numIK ++;
+            }
+            if (o == null) {
+                throw new RuntimeException("weird");
+            }
+            RETAIN[i] = o;
+            traceVerbose("Object " + i + " is " + o.getClass().getName());
+        }
+        System.out.println(numObjects + " Objects created");
+        System.out.println(" - IK: " + numIK + " (" + percentOf(numIK, numObjects) + ")");
+        System.out.println(" - OAK: " + numOAK + " (" + percentOf(numOAK, numObjects) + ")");
+        System.out.println(" - TAK: " + numTAK + " (" + percentOf(numTAK, numObjects) + ")");
+
+        // don't retain constructors
         ctors = null;
 
         if (printHashes) {
@@ -198,12 +189,11 @@ public class StressGCWithManyClasses extends TestCaseBase implements Callable<In
             }
         }
 
-        // In ball-of-yarn-mode, wire up all objects and just keep the start of the thread
-        // In array mode, we keep using the RETAIN array
-        Object startOfBallOfYarn;
-        if (ballOfYarnMode) {
-            BALL_OF_YARN = buildBallOfYarn(RETAIN, r);
-            RETAIN = null;
+        // wire up
+        if (wireUp) {
+            System.out.println("Wiring up...");
+            Class markerInterface = loader.loadClass("IsGenerated");
+            createInterconnections(RETAIN, r, markerInterface);
         }
 
         System.out.println("Preparatory GC...");
