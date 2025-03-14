@@ -30,6 +30,10 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
             description = "do not wait (only with autoyes).")
     boolean nowait;
 
+    @CommandLine.Option(names = { "--print-ihash" }, defaultValue = "false",
+            description = "print ihash.")
+    boolean print_ihash;
+
     @CommandLine.Option(names = { "--gc" },
             description = "do a gc at the end (default: ${DEFAULT-VALUE})@")
     boolean gc;
@@ -57,19 +61,27 @@ public class ManySmallObjects extends TestCaseBase implements Callable<Integer> 
         oa = new Object[num_objects];
 
         for (int i = 0; i < num_objects; i ++) {
-            Object o; TestObject last_o = null;
+            Object o;
+            TestObject last_o = null;
             switch (size_objects) {
-                case -2: o = new TestObject();
-                if (last_o != null) last_o.next = o;
-                last_o = (TestObject)o;
-                break;
+                case -2:
+                    o = new TestObject();
+                    if (last_o != null) last_o.next = o;
+                    last_o = (TestObject) o;
+                    break;
                 case -1:
-                o = new Object();
-                break;
+                    o = new Object();
+                    break;
                 default:
-                o = new byte[size_objects];
+                    o = new byte[size_objects];
             }
             oa[i] = o;
+        }
+
+        if (print_ihash) {
+            for (int i = 0; i < oa.length; i++) {
+                System.out.println(System.identityHashCode(oa[i]));
+            }
         }
 
         waitForKeyPress("Befire release.");

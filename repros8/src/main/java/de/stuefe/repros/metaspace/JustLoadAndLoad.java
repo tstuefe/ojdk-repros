@@ -52,9 +52,7 @@ public class JustLoadAndLoad extends TestCaseBase implements Callable<Integer> {
         System.out.println();
 
         System.gc();
-        if (!nowait) {
-            MiscUtils.waitForKeyPress();
-        }
+        waitForKeyPress("Done loading clases");
 
         System.out.print("Loading " + numClasses + " into " + numLoaders + "loaders...");
 
@@ -76,9 +74,7 @@ public class JustLoadAndLoad extends TestCaseBase implements Callable<Integer> {
             }
         }
 
-        if (!nowait) {
-            MiscUtils.waitForKeyPress();
-        }
+        waitForKeyPress("Done");
 
         return 0;
 

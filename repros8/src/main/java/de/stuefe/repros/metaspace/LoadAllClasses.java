@@ -41,41 +41,31 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
 
     @CommandLine.Option(names = { "--repeat", "-r" },
             description = "Repeat loading with different loaders (default: ${DEFAULT_VALUE})")
-    int numLoaders = 1;
+    int repeat = 1;
 
     @CommandLine.Parameters(index = "0..*", arity = "1")
     List<String> files;
 
-    void log(String s) {
-        if (verbose) {
-            System.out.print(s);
-        }
-    }
-
-    void log_cr(String s) {
-        if (verbose) {
-            System.out.println(s);
-        }
-    }
-
-    final static ArrayList<ClassLoader> loaders = new ArrayList<>();
+    public static ArrayList<ClassLoader> loaders = new ArrayList<>();
+    public static ArrayList<Class> classes = new ArrayList<>();
 
     @Override
     public Integer call() throws Exception {
         initialize(verbose, auto_yes, nowait);
 
-        int loadedTotal = 0;
+        int loadedTotal = 0, errorsTotal = 0, omittedTotal = 0;
 
         waitForKeyPress("Before start...");
 
-        for (int i = 0; i < numLoaders; i++) {
-            for (String s : files) {
-                log_cr("Load all classes from: " + s);
+        for (int i = 0; i < repeat; i++) {  // for every loader
+            traceVerbose("Iteration " + i + "...");
+            for (String s : files) { // for every jar file
+                traceVerbose("Load all classes from: " + s);
                 JarFile jarFile = null;
                 try {
                     jarFile = new JarFile(s);
                 } catch (IOException ex) {
-                    System.err.println("Failed to open jar " + s);
+                    trace("Failed to open jar " + s);
                     if (!ignoreErrors) {
                         ex.printStackTrace();
                         return -1;
@@ -83,6 +73,8 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
                         continue;
                     }
                 }
+
+                int loaded0 = 0, errors0 = 0, omitted0 = 0;
 
                 boolean isJmod = s.endsWith(".jmod");
 
@@ -94,13 +86,12 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
 
                 while (e.hasMoreElements()) {
                     JarEntry je = e.nextElement();
-                    log(je.getName());
                     if (je.isDirectory() || !je.getName().endsWith(".class")) {
-                        log_cr(" (omitted)");
+                        omitted0 ++;
                         continue;
                     }
                     if (isJmod && !je.getName().startsWith("classes/")) {
-                        log_cr(" (omitted)");
+                        omitted0 ++;
                         continue;
                     }
                     String className = je.getName().substring(0, je.getName().length() - 6 /* cut ".class" */);
@@ -112,28 +103,31 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
                     Class c = null;
                     try {
                         c = cl.loadClass(className);
-                    } catch (Throwable ex) {
+                        loaded0++;
+                        classes.add(c);
+                    } catch (OutOfMemoryError ex) {
+                      ex.printStackTrace();
+                      waitForKeyPress("Done (OOM)");
+                      System.exit(-1);
+                    } catch (ClassNotFoundException|NoClassDefFoundError ex) {
+                        errors0++;
+                        //traceVerbose(" Failed to load " + className);
                         if (!ignoreErrors) {
                             ex.printStackTrace();
                             return -1;
-                        } else {
-                            log_cr(" (failed)");
-                            continue;
                         }
                     }
-                    if (c != null) {
-                        log_cr(" (ok)");
-                        loadedTotal++;
-                    } else {
-                        log_cr(" (null?)");
-                    }
                 }
-            }
-        }
+                traceVerbose("... classes loaded: " + loaded0 + ", omitted: " + omitted0 + ", errors: " + errors0);
+                loadedTotal += loaded0;
+                omittedTotal += omitted0;
+                errorsTotal += errors0;
+            }  // for every jar file
+        }  // for every loader
 
-        waitForKeyPress("Loaded : " + loadedTotal + " classes into " + loaders.size() + " loaders.");
+        trace("Total classes loaded: " + loadedTotal + ", omitted: " + omittedTotal + ", errors: " + errorsTotal);
 
-        waitForKeyPress("Loaded : " + loadedTotal + " classes into " + loaders.size() + " loaders.");
+        waitForKeyPress("Done");
 
         return 0;
     }
