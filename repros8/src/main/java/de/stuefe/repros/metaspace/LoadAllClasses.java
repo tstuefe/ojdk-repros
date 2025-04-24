@@ -107,6 +107,7 @@ public class LoadAllClasses extends TestCaseBase implements Callable<Integer> {
                         classes.add(c);
                     } catch (OutOfMemoryError ex) {
                       ex.printStackTrace();
+                      trace("Total classes loaded: " + loadedTotal + ", omitted: " + omittedTotal + ", errors: " + errorsTotal);
                       waitForKeyPress("Done (OOM)");
                       System.exit(-1);
                     } catch (ClassNotFoundException|NoClassDefFoundError ex) {

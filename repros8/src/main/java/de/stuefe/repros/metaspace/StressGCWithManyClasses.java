@@ -2,15 +2,12 @@ package de.stuefe.repros.metaspace;
 
 import de.stuefe.repros.MiscUtils;
 import de.stuefe.repros.TestCaseBase;
-import de.stuefe.repros.metaspace.internals.InMemoryClassLoader;
-import de.stuefe.repros.metaspace.internals.Utils;
 import picocli.CommandLine;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.concurrent.Callable;
-import java.util.regex.Matcher;
 
 @CommandLine.Command(name = "ManyClassesManyObjectsFullGC", mixinStandardHelpOptions = true,
         description = "ManyClassesManyObjectsFullGC repro.")

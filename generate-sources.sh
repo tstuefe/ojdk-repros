@@ -6,7 +6,7 @@ rm -rf $OUTDIR
 
 set -e
 
-java -cp $REPROS_JAR de.stuefe.repros.metaspace.GenerateSources -C ${NUM_SOURCES} -D $OUTDIR
+java -cp $REPROS_JAR de.stuefe.repros.metaspace.GenerateSources --realistic -C ${NUM_SOURCES} -D $OUTDIR
 pushd $OUTDIR
 javac *.java
 jar -cf $JARFILE *.class
