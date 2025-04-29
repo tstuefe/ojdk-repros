@@ -32,7 +32,9 @@ public class RunProcess extends TestCaseBase implements Callable<Integer> {
     List<String> program_and_args;
 
     public static void main(String... args) {
-        int exitCode = new CommandLine(new RunProcess()).execute(args);
+        CommandLine cmdline = new CommandLine(new RunProcess());
+        cmdline.setStopAtPositional(true);
+        int exitCode = cmdline.execute(args);
         System.exit(exitCode);
     }
 
