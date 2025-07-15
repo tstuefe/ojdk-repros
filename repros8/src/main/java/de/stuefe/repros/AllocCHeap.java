@@ -84,6 +84,10 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
             description = "verbose mode. Default: ${DEFAULT-VALUE}.")
     boolean verbose = false;
 
+    @CommandLine.Option(names = { "--seal-every-n" },
+            description = "Every nth allocation (at at the end), do an allocation that is not free'd. Default: ${DEFAULT-VALUE}.")
+    int seal_every_n = 0;
+
     /**
      * A handy way to specify a number of parameters in a row
      */
@@ -204,11 +208,17 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
                 if (testType != TestType.leak) {
                     pointers.set(i, p);
                 }
+                if (seal_every_n > 0 && (allocated % seal_every_n) == 0) {
+                    theUnsafe.allocateMemory(1);
+                }
                 if ((i % 10000) == 0) {
                     sleep_delay(alloc_delay);
                 }
             }
             traceVerbose("Allocated: " + allocated);
+            if (seal_every_n > 0) {
+                theUnsafe.allocateMemory(1);
+            }
         }
 
         void shuffleAllocations() {
@@ -340,6 +350,7 @@ public class AllocCHeap extends TestCaseBase implements Callable<Integer> {
         System.out.println("Randomizer seed: " + randseed);
         System.out.println("Alloc delay: " + alloc_delay);
         System.out.println("Free delay: " + free_delay);
+        System.out.println("Seal every nth allocation: " + seal_every_n);
 
         System.out.println("----");
 

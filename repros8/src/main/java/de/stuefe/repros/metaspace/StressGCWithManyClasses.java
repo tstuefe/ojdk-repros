@@ -9,8 +9,8 @@ import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-@CommandLine.Command(name = "ManyClassesManyObjectsFullGC", mixinStandardHelpOptions = true,
-        description = "ManyClassesManyObjectsFullGC repro.")
+@CommandLine.Command(name = "StressGCWithManyClasses", mixinStandardHelpOptions = true,
+        description = "StressGCWithManyClasses repro.")
 public class StressGCWithManyClasses extends TestCaseBase implements Callable<Integer> {
 
     @CommandLine.Option(names = { "--autoyes", "-y" }, defaultValue = "false",
