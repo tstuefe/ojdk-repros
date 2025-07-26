@@ -4,6 +4,7 @@ import de.stuefe.repros.TestCaseBase;
 import picocli.CommandLine;
 
 import java.util.List;
+import java.io.File;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(name = "SimpleSpawn", mixinStandardHelpOptions = true,
@@ -13,6 +14,13 @@ public class SimpleSpawn extends TestCaseBase implements Callable<Integer> {
     @CommandLine.Option(names = { "--num", "-n" },
             description = "Number of child processes (default: ${DEFAULT-VALUE})")
     int num = 1;
+
+    @CommandLine.Option(names = { "--ignore-errors", "-i" }, description = "quietly swallow and ignore IOExceptions (default: ${DEFAULT-VALUE}")
+    boolean ignore_errors = false;
+
+
+    @CommandLine.Option(names = { "--workdir", "-d" }, description = "current working directory (default: ${DEFAULT-VALUE}")
+    String workdir;
 
     @CommandLine.Option(names = { "--autoyes", "-y" },
             description = "Autoyes.")
@@ -39,6 +47,10 @@ public class SimpleSpawn extends TestCaseBase implements Callable<Integer> {
         ProcessBuilder builder = new ProcessBuilder();
         builder.command(command).inheritIO();
 
+        if (workdir != null) {
+            builder = builder.directory(new File(workdir));
+        }
+
         waitForKeyPress("Before spawning child(s)...");
         Process[] processes = new Process[num];
 
@@ -46,9 +58,14 @@ public class SimpleSpawn extends TestCaseBase implements Callable<Integer> {
             try {
                 processes[i] = builder.start();
             } catch (Exception e) {
+                processes[i] = null;
                 System.err.println("Process " + i + " failed to start");
-                e.printStackTrace();
-                System.exit(-1);
+                System.err.println(e.getMessage());
+                if (!ignore_errors) {
+                    System.exit(-1);
+                } else {
+                    waitForKeyPress("Chils spwan ero...");
+                }
             }
             if (verbose) {
                 System.out.println("Process " + i + " started.");
@@ -56,6 +73,9 @@ public class SimpleSpawn extends TestCaseBase implements Callable<Integer> {
         }
 
         for (int i = 0; i < num; i ++) {
+            if (processes[i] == null) {
+                continue;
+            }
             processes[i].waitFor();
             if (verbose) {
                 System.out.println("Process " + i + " finished (exitcode " + processes[i].exitValue() + ")");
@@ -63,6 +83,8 @@ public class SimpleSpawn extends TestCaseBase implements Callable<Integer> {
         }
 
         System.out.println("All process(es) finished.");
+
+        waitForKeyPress("Before exit...");
 
         return 0;
     }
