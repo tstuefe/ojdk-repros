@@ -17,7 +17,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
 
     @CommandLine.Option(names = { "--stack-size", "-s" },
             description = "Stack Size in KB (default: ${DEFAULT-VALUE}).")
-    int stackSize = 1024;
+    int stackSize = 2048;
 
     @CommandLine.Option(names = { "--stack-depth", "-D" },
             description = "Stack Depth (default: ${DEFAULT-VALUE}).")
@@ -79,7 +79,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         CyclicBarrier barrier;
         Object locks[];
         int no;
-        public Sleeper(CyclicBarrier barrier, int no, Object locks[]) {
+        public Sleeper(CyclicBarrier barrier, int no, int stackSize, Object locks[]) {
             super(null, null, "TestThread", stackSize * 1024);
             this.barrier = barrier;
             this.no = no;
@@ -119,10 +119,16 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
         System.out.println("Number of threads: " + num_threads);
         System.out.println("Wait time: " + secs);
         System.out.println("Repeat count: " + repeat);
+        System.out.println("Stack size: " + stackSize);
         System.out.println("Stack depth: " + stackDepth);
         System.out.println("GC after Cycle: " + gc_after_cycle);
         System.out.println("Number of locks: " + numLocks);
         System.out.println("lock ms: " + lockms);
+
+        if (stackSize >= 512 * 1024) {
+            System.err.println("Stack sizes > 512 not allowed (did you mean to specify KB with -s?)");
+            System.exit(-1);
+        }
 
         Object locks[] = null;
         if (numLocks > 0) {
@@ -143,7 +149,7 @@ public class MultiThreadTest extends TestCaseBase implements Callable<Integer> {
             long t1 = System.currentTimeMillis();
             try {
                 for (int i = 0; i < num_threads; i ++) {
-                    sleepers[i] = new Sleeper(barrier, i, locks);
+                    sleepers[i] = new Sleeper(barrier, i, stackSize, locks);
                     sleepers[i].start();
                     created ++;
                     if (created % (num_threads / 10) == 0) {
